@@ -197,6 +197,14 @@ window.gerarOrcamento = async (slug) => {
   if (!valor) { alert('Informe o valor do projeto.'); return; } // valida ANTES de criar o lead
   const l = slug ? lead(slug) : await resolverCliente('f-cliente', v2('f-tipo') || 'site');
   if (!l) return;
+  // linhas de condições — só entram as preenchidas (ex.: sem "ajustes" a linha some)
+  const linhas = [
+    ['Prazo de entrega', v2('f-prazo')],
+    ['Forma de pagamento', v2('f-pagamento')],
+    ['Validade desta proposta', v2('f-validade') || '7 dias'],
+    ['Ajustes inclusos', v2('f-ajustes')],
+  ].filter(([, val]) => val)
+    .map(([rot, val]) => `<tr><td>${rot}</td><td>${esc(val)}</td></tr>`).join('');
   const tpl = await fetch('/painel/templates/orcamento.html').then((r) => r.text());
   const html = tpl
     .replaceAll('{{NOME_CLIENTE}}', esc(l.nome))
@@ -208,9 +216,7 @@ window.gerarOrcamento = async (slug) => {
     .replace('{{FORMA_PAGAMENTO_NOTA}}', '')
     .replace('{{CAIXA_MENSALIDADE}}', mensal
       ? `<div class="valor-caixa"><div class="v">R$ ${mensal.toLocaleString('pt-BR')}/mês</div><div class="l">manutenção e suporte contínuos</div></div>` : '')
-    .replace('{{PRAZO}}', esc(v2('f-prazo')))
-    .replace('{{FORMA_PAGAMENTO}}', esc(v2('f-pagamento')))
-    .replace('{{AJUSTES}}', esc(v2('f-ajustes')))
+    .replace('{{LINHAS_CONDICOES}}', linhas)
     .replaceAll('{{NOME_PRESTADOR}}', esc(st.assinatura.nome || st.cfg.nome || ''))
     .replace('{{APRESENTACAO}}', esc(st.assinatura.apresentacao || ''))
     .replace('{{WHATSAPP}}', esc(st.assinatura.whatsapp || ''));
