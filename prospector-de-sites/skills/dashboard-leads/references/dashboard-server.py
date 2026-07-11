@@ -3,7 +3,7 @@
 """Prospector — servidor local do dashboard (SQLite). Sem dependências: só Python padrão.
 Uso: python dashboard-server.py  (ou duplo clique em iniciar-dashboard.bat)
 Abre em http://localhost:8765 — edições, exclusões e drag&drop salvam no prospector.db"""
-import json, sqlite3, os, re, sys, webbrowser
+import datetime, json, sqlite3, os, re, sys, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 PASTA = os.path.dirname(os.path.abspath(__file__))
@@ -62,7 +62,9 @@ class App(SimpleHTTPRequestHandler):
         self.end_headers(); self.wfile.write(corpo)
     def _corpo(self):
         n = int(self.headers.get('Content-Length', 0))
-        return json.loads(self.rfile.read(n).decode('utf-8')) if n else {}
+        if not n: return {}
+        try: return json.loads(self.rfile.read(n).decode('utf-8'))
+        except Exception: return None  # handlers respondem 400
     def do_GET(self):
         if self.path.split('?')[0] == '/api/config':
             cfg = ler_config()
@@ -83,48 +85,101 @@ class App(SimpleHTTPRequestHandler):
                 self.end_headers()
                 return
             self.path = '/dashboard.html'
+        # allowlist de estáticos: config (senha!) e .db NUNCA saem pelo HTTP
+        caminho = self.path.split('?')[0]
+        if not (caminho.startswith('/painel/') or caminho.startswith('/sites/')
+                or caminho in ('/manual.html', '/favicon.ico', '/dashboard.html')):
+            return self._json(404, {'erro': 'rota'})
         return SimpleHTTPRequestHandler.do_GET(self)
+    def _briefing_rmw(self, slug, mudar):
+        """read-modify-write do JSON briefing DENTRO do servidor (evita lost-update do painel stale)."""
+        c = conexao()
+        atual = c.execute('SELECT briefing, briefingStatus FROM leads WHERE slug=?', (slug,)).fetchone()
+        if atual is None:
+            c.close(); return self._json(404, {'erro': 'lead não encontrado'})
+        try: dados = json.loads(atual[0]) if atual[0] else {}
+        except Exception: dados = {}
+        status = mudar(dados) or atual[1]
+        c.execute('UPDATE leads SET briefing=?, briefingStatus=?, atualizado=datetime("now","localtime") WHERE slug=?',
+                  (json.dumps(dados, ensure_ascii=False), status, slug))
+        c.commit(); c.close()
+        return self._json(200, {'ok': True})
+
     def do_POST(self):
         partes = self.path.split('?')[0].split('/')
+        corpo = self._corpo()
+        if corpo is None:
+            return self._json(400, {'erro': 'JSON inválido'})
         if self.path.split('?')[0] == '/api/leads':
-            l = self._corpo(); c = conexao()
-            c.execute('INSERT OR REPLACE INTO leads (%s) VALUES (%s)' % (','.join(CAMPOS), ','.join('?'*len(CAMPOS))),
-                      [l.get(k) for k in CAMPOS])
+            l = corpo
+            if not l.get('slug'):
+                return self._json(400, {'erro': 'slug obrigatório'})
+            fornecidos = [k for k in CAMPOS if k in l]
+            c = conexao()
+            existe = c.execute('SELECT 1 FROM leads WHERE slug=?', (l['slug'],)).fetchone()
+            if existe:  # merge: só atualiza os campos enviados — nunca zera o resto (briefing, orçamento...)
+                sets = [k for k in fornecidos if k != 'slug']
+                if sets:
+                    c.execute('UPDATE leads SET %s, atualizado=datetime("now","localtime") WHERE slug=?' %
+                              ','.join('%s=?' % k for k in sets), [l[k] for k in sets] + [l['slug']])
+            else:
+                c.execute('INSERT INTO leads (%s) VALUES (%s)' % (','.join(fornecidos), ','.join('?'*len(fornecidos))),
+                          [l[k] for k in fornecidos])
             c.commit(); c.close(); return self._json(200, {'ok': True})
         # POST /api/gerar/<slug>  {arquivo: contrato|briefing|orcamento, html} -> grava sites/<slug>/<arquivo>-<slug>.html
         if len(partes) == 4 and partes[1] == 'api' and partes[2] == 'gerar':
             slug = partes[3]
-            corpo = self._corpo()
             arquivo = corpo.get('arquivo', '')
             html = corpo.get('html', '')
             if not re.fullmatch(r'[a-z0-9-]{1,60}', slug or ''):
                 return self._json(400, {'erro': 'slug inválido'})
             if arquivo not in ('contrato', 'briefing', 'orcamento') or not html:
                 return self._json(400, {'erro': 'arquivo deve ser contrato|briefing|orcamento e html não pode ser vazio'})
+            c = conexao()
+            existe = c.execute('SELECT 1 FROM leads WHERE slug=?', (slug,)).fetchone()
+            c.close()
+            if not existe:
+                return self._json(404, {'erro': 'lead não encontrado'})
             pasta = os.path.join(PASTA, 'sites', slug)
             os.makedirs(pasta, exist_ok=True)
             caminho = os.path.join(pasta, '%s-%s.html' % (arquivo, slug))
             open(caminho, 'w', encoding='utf-8').write(html)
             return self._json(200, {'ok': True, 'url': '/sites/%s/%s-%s.html' % (slug, arquivo, slug)})
-        # POST /api/briefing/<slug>/respostas  {respostas:{...}} -> salva no lead e marca respondido
+        # POST /api/briefing/<slug>/respostas  {respostas:{...}} -> salva no lead e marca respondido (não lido)
         if len(partes) == 5 and partes[1] == 'api' and partes[2] == 'briefing' and partes[4] == 'respostas':
-            slug = partes[3]
-            corpo = self._corpo()
-            c = conexao()
-            atual = c.execute('SELECT briefing FROM leads WHERE slug=?', (slug,)).fetchone()
-            if atual is None:
-                c.close(); return self._json(404, {'erro': 'lead não encontrado'})
-            try: dados = json.loads(atual[0]) if atual[0] else {}
-            except Exception: dados = {}
-            dados['respostas'] = corpo.get('respostas', {})
-            c.execute('UPDATE leads SET briefing=?, briefingStatus=?, atualizado=datetime("now","localtime") WHERE slug=?',
-                      (json.dumps(dados, ensure_ascii=False), 'respondido', slug))
-            c.commit(); c.close()
-            return self._json(200, {'ok': True})
+            respostas = corpo.get('respostas', {})
+            if not isinstance(respostas, dict) or not any(str(v or '').strip() for v in respostas.values()):
+                return self._json(400, {'erro': 'nenhuma resposta preenchida'})
+            def mudar(dados):
+                dados['respostas'] = respostas
+                dados['respondidoEm'] = datetime.date.today().isoformat()
+                dados.pop('vistoEm', None)  # resposta nova (ou atualizada) volta pro filtro "não lidos"
+                return 'respondido'
+            return self._briefing_rmw(partes[3], mudar)
+        # POST /api/briefing/<slug>/visto -> marca lido (read-modify-write no servidor)
+        if len(partes) == 5 and partes[1] == 'api' and partes[2] == 'briefing' and partes[4] == 'visto':
+            def mudar(dados):
+                dados['vistoEm'] = datetime.date.today().isoformat()
+                return None
+            return self._briefing_rmw(partes[3], mudar)
+        # POST /api/briefing/<slug>/registrar {respostas_texto} -> dono cola as respostas (já conta como lido)
+        if len(partes) == 5 and partes[1] == 'api' and partes[2] == 'briefing' and partes[4] == 'registrar':
+            texto = str(corpo.get('respostas_texto', '') or '').strip()
+            if not texto:
+                return self._json(400, {'erro': 'respostas_texto vazio'})
+            def mudar(dados):
+                dados['respostas_texto'] = texto
+                dados.setdefault('respondidoEm', datetime.date.today().isoformat())
+                dados['vistoEm'] = datetime.date.today().isoformat()
+                return 'respondido'
+            return self._briefing_rmw(partes[3], mudar)
         return self._json(404, {'erro': 'rota'})
     def do_PUT(self):
+        corpo_put = self._corpo()
+        if corpo_put is None:
+            return self._json(400, {'erro': 'JSON inválido'})
         if self.path.split('?')[0] == '/api/config':
-            cfg = ler_config(); corpo = self._corpo()
+            cfg = ler_config(); corpo = corpo_put
             if 'contratante' in corpo or 'hostgator' in corpo:
                 if 'contratante' in corpo:
                     ct = cfg.get('contratante', {})
@@ -145,7 +200,7 @@ class App(SimpleHTTPRequestHandler):
             return self._json(200, {'ok': True})
         partes = self.path.split('?')[0].split('/')
         if len(partes) == 4 and partes[1] == 'api' and partes[2] == 'leads':
-            slug, ch = partes[3], self._corpo()
+            slug, ch = partes[3], corpo_put
             sets = [k for k in ch if k in CAMPOS and k != 'slug']
             if sets:
                 c = conexao()

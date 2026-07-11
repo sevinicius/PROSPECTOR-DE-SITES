@@ -1,6 +1,6 @@
 // app.js — bootstrap, navegação e handlers globais (drag&drop, modal, doc).
 import { api } from './api.js';
-import { st, NOMES, ORDEM, fil, emAndamento, ativos, followups, COM_PAGINA } from './estado.js';
+import { st, NOMES, ORDEM, fil, emAndamento, ativos, followups, COM_PAGINA, briefings, orcamentos, situacaoBriefing } from './estado.js';
 import { esc } from './ui.js';
 import { vGeral } from './views/geral.js';
 import { vPipeline } from './views/pipeline.js';
@@ -9,18 +9,21 @@ import { vProjetos } from './views/projetos.js';
 import { vComparador } from './views/comparador.js';
 import { vFollowup } from './views/followup.js';
 import { vContratos } from './views/contratos.js';
+import { vBriefings } from './views/briefings.js';
+import { vOrcamentos } from './views/orcamentos.js';
 import { vFinanceiro } from './views/financeiro.js';
 import { vConfig } from './views/config.js';
 import './fluxos.js';
 
 const VIEWS = {
   geral: ['Visão geral', vGeral], pipeline: ['Pipeline', vPipeline], followup: ['Follow-ups', vFollowup],
-  clientes: ['Clientes', vClientes], projetos: ['Projetos', vProjetos], contratos: ['Contratos', vContratos],
+  clientes: ['Clientes', vClientes], projetos: ['Projetos', vProjetos], briefings: ['Briefings', vBriefings],
+  orcamentos: ['Orçamentos', vOrcamentos], contratos: ['Contratos', vContratos],
   financeiro: ['Financeiro', vFinanceiro], comparador: ['Comparador', vComparador], config: ['Configurações', vConfig],
 };
 const GRUPOS = [
   ['Operação', ['geral', 'pipeline', 'followup']],
-  ['Carteira', ['clientes', 'projetos', 'contratos', 'financeiro']],
+  ['Carteira', ['clientes', 'projetos', 'briefings', 'orcamentos', 'contratos', 'financeiro']],
   ['Ferramentas', ['comparador', 'config']],
 ];
 
@@ -31,6 +34,8 @@ function contagem(v) {
     case 'followup': return followups().length;
     case 'clientes': return ativos().length;
     case 'projetos': return comPagina.length;
+    case 'briefings': return briefings().filter((l) => situacaoBriefing(l) === 'naolido').length;
+    case 'orcamentos': return orcamentos().length;
     case 'comparador': return comPagina.filter((l) => l.slug).length;
     case 'contratos': return ativos().length;
     default: return null;
@@ -60,6 +65,7 @@ function salvar(slug, mudancas) { api.patch(slug, mudancas).then(recarrega); }
 
 // ---------- handlers globais (referenciados por onclick="" nas views) ----------
 window.setView = (v) => { st.view = v; st.pag = 1; location.hash = v; render(); };
+window.filtrarBriefings = (f) => { st.filtroBf = f; render(); };
 window.irPag = (n) => { st.pag = n; render(); };
 window.mudaPorPag = (v) => { st.porPag = v === 'auto' ? 'auto' : parseInt(v); st.pag = 1; render(); };
 window.ordenar = (c) => {
@@ -157,8 +163,9 @@ window.salvarEdit = () => {
 };
 
 // ---------- visor de contrato ----------
-window.abrirContrato = (slug, nome) => {
-  document.getElementById('doc-titulo').textContent = 'Contrato — ' + nome;
+window.abrirContrato = (slug) => {
+  const l = st.leads.find((x) => x.slug === slug) || {};
+  document.getElementById('doc-titulo').textContent = 'Contrato — ' + (l.nome || slug);
   document.getElementById('doc-frame').src = `/sites/${slug}/contrato-${slug}.html`;
   document.getElementById('doc-bg').classList.add('aberto');
 };
@@ -205,6 +212,10 @@ let rsz; window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setT
 
 const hash = location.hash.replace('#', '');
 if (VIEWS[hash]) st.view = hash;
+window.addEventListener('hashchange', () => {
+  const v = location.hash.replace('#', '');
+  if (VIEWS[v] && st.view !== v) { st.view = v; st.pag = 1; render(); }
+});
 
 const modo = document.getElementById('modo');
 api.leads().then((leads) => {

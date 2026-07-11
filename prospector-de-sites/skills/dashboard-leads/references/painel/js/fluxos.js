@@ -1,6 +1,6 @@
 // fluxos.js — briefing → orçamento → contrato: modais e geração de documentos.
 import { api } from './api.js';
-import { st, SERVICOS, PERGUNTAS_COMUNS, PERGUNTAS_BRIEFING, OBJETO_CONTRATO } from './estado.js';
+import { st, SERVICOS, PERGUNTAS_COMUNS, PERGUNTAS_BRIEFING, OBJETO_CONTRATO, parseBriefing, temRespostas } from './estado.js';
 import { fmt, esc } from './ui.js';
 
 const TITULO_SERVICO = {
@@ -15,9 +15,7 @@ const dataExtenso = () => new Date().toLocaleDateString('pt-BR', { day: 'numeric
 const lead = (slug) => st.leads.find((l) => l.slug === slug) || {};
 const perguntasDe = (tipo) => PERGUNTAS_COMUNS.concat(PERGUNTAS_BRIEFING[tipo] || PERGUNTAS_BRIEFING.outro);
 
-function briefingDados(l) {
-  try { return JSON.parse(l.briefing || '{}'); } catch (e) { return {}; }
-}
+const briefingDados = parseBriefing;
 
 // ---- valor por extenso (reais, até milhões) ----
 const UNI = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
@@ -34,12 +32,16 @@ export function valorExtenso(v) {
   v = Math.round((parseFloat(v) || 0) * 100) / 100;
   const int = Math.floor(v), cent = Math.round((v - int) * 100);
   const mi = Math.floor(int / 1e6), milhar = Math.floor((int % 1e6) / 1000), resto = int % 1000;
-  const partes = [];
-  if (mi) partes.push(mi === 1 ? 'um milhão' : ate999(mi) + ' milhões');
-  if (milhar) partes.push(milhar === 1 ? 'mil' : ate999(milhar) + ' mil');
-  if (resto) partes.push(ate999(resto));
-  let out = partes.join(partes.length > 1 && resto && resto < 100 ? ' e ' : ' ');
-  out = int === 0 ? '' : out + (int === 1 ? ' real' : ' reais');
+  const grupos = [];
+  if (mi) grupos.push(mi === 1 ? 'um milhão' : ate999(mi) + ' milhões');
+  if (milhar) grupos.push(milhar === 1 ? 'mil' : ate999(milhar) + ' mil');
+  let inteiro;
+  if (resto) {
+    // regra pt-BR: "e" antes do último grupo quando < 100 ou centena exata (mil e quinhentos)
+    const conector = grupos.length ? ((resto < 100 || resto % 100 === 0) ? ' e ' : ' ') : '';
+    inteiro = grupos.join(' ') + conector + ate999(resto);
+  } else inteiro = grupos.join(' ');
+  let out = int === 0 ? '' : inteiro + (int === 1 ? ' real' : ' reais');
   if (cent) out += (out ? ' e ' : '') + ate999(cent) + (cent === 1 ? ' centavo' : ' centavos');
   return out || 'zero reais';
 }
@@ -64,6 +66,16 @@ function selectClientes(id, slugSel) {
     ${ls.map((l) => `<option value="${l.slug}"${l.slug === slugSel ? ' selected' : ''}>${esc(l.nome)}</option>`).join('')}
   </select></div>
   <div id="caixa-novo-nome" style="display:${slugSel ? 'none' : 'block'}"><label>Nome do novo cliente</label><input id="f-novo-nome" placeholder="ex.: Clínica Boa Vista"></div>`;
+}
+
+// select que REABRE o modal com o cliente escolhido (pré-preenche objeto/escopo/valores dele)
+function selectClienteReabre(reabreFn) {
+  const ls = st.leads.filter((l) => !['descartado', 'encerrado'].includes(l.status));
+  return `<div><label>Cliente</label><select id="f-cliente" onchange="if(this.value!=='__novo__')${reabreFn}(this.value);else document.getElementById('caixa-novo-nome').style.display='block'">
+      <option value="__novo__">— novo cliente —</option>
+      ${ls.map((x) => `<option value="${x.slug}">${esc(x.nome)}${x.briefingStatus === 'respondido' ? ' (briefing respondido)' : ''}</option>`).join('')}
+    </select></div>
+    <div id="caixa-novo-nome"><label>Nome do novo cliente</label><input id="f-novo-nome" placeholder="ex.: Clínica Boa Vista"></div>`;
 }
 
 const selectTipo = (id, sel) =>
@@ -97,6 +109,10 @@ window.abrirBriefingModal = (slug) => {
 
 window.gerarBriefing = async () => {
   const tipo = v2('f-tipo');
+  const sel = v2('f-cliente');
+  // cliente existente que já respondeu: regerar apaga as respostas — confirmar
+  if (sel && sel !== '__novo__' && temRespostas(lead(sel))
+      && !confirm('Este cliente já tem respostas de briefing registradas. Gerar um briefing novo vai apagá-las. Continuar?')) return;
   const l = await resolverCliente('f-cliente', tipo);
   if (!l) return;
   const perguntas = perguntasDe(tipo);
@@ -130,18 +146,24 @@ window.abrirRespostasModal = (slug) => {
     ? perguntasDe(dados.tipo || l.servico || 'outro')
         .map(([id, p]) => `${p}\n${dados.respostas[id] || '(sem resposta)'}`).join('\n\n')
     : (dados.respostas_texto || '');
+  // respostas de formulário (do cliente) são somente-leitura; texto colado à mão é editável
+  const soLeitura = !!jaTem;
   abrirModal2(`<h2>Respostas do briefing — ${esc(l.nome)}</h2>
-    <p class="nota-p" style="margin-bottom:8px">${jaTem ? 'Respondido pela página do briefing.' : 'Cole aqui o que o cliente mandou (WhatsApp/e-mail).'}</p>
+    <p class="nota-p" style="margin-bottom:8px">${jaTem ? 'Respondido pela página do briefing (somente leitura).' : 'Cole aqui o que o cliente mandou (WhatsApp/e-mail).'}</p>
     ${areaTxt('f-respostas', 'Respostas', texto, 12)}
     <div class="mbot"><button class="cancelar" onclick="fecharModal2()">Fechar</button>
-    <button class="salvar" onclick="salvarRespostas('${slug}')">Salvar respostas</button></div>`);
+    ${soLeitura ? '' : `<button class="salvar" onclick="salvarRespostas('${slug}')">Salvar respostas</button>`}</div>`);
+  if (soLeitura) document.getElementById('f-respostas').readOnly = true;
+  // abrir as respostas do cliente = lido — RMW no servidor (não regrava o blob stale)
+  if (temRespostas(l) && !dados.vistoEm) {
+    api.marcarVisto(slug).then(window.__recarrega).catch(() => {});
+  }
 };
 
 window.salvarRespostas = async (slug) => {
-  const l = lead(slug);
-  const dados = briefingDados(l);
-  dados.respostas_texto = v2('f-respostas');
-  await api.patch(slug, { briefing: JSON.stringify(dados), briefingStatus: dados.respostas_texto ? 'respondido' : (l.briefingStatus || 'criado') });
+  const texto = v2('f-respostas');
+  if (!texto) { alert('Cole as respostas do cliente antes de salvar.'); return; }
+  await api.registrarRespostas(slug, texto); // RMW no servidor
   window.fecharModal2();
   window.__recarrega();
 };
@@ -152,12 +174,15 @@ window.abrirOrcamentoModal = (slug) => {
   const l = lead(slug);
   const dados = briefingDados(l);
   let escopo = '';
-  if (dados.respostas) {
+  if (dados.respostas && Object.keys(dados.respostas).length) {
     escopo = perguntasDe(dados.tipo || l.servico || 'outro')
       .filter(([id]) => dados.respostas[id])
       .map(([id, p]) => `• ${dados.respostas[id]}`).join('\n');
   } else if (dados.respostas_texto) escopo = dados.respostas_texto;
-  abrirModal2(`<h2>Gerar orçamento — ${esc(l.nome)}</h2>
+  // sem cliente definido: seletor (escolher um existente reabre o modal já pré-preenchido)
+  const seletor = slug ? '' : selectClienteReabre('abrirOrcamentoModal') + selectTipo('f-tipo', l.servico || 'site');
+  abrirModal2(`<h2>Gerar orçamento${l.nome ? ' — ' + esc(l.nome) : ''}</h2>
+    ${seletor}
     ${areaTxt('f-escopo', 'O que será desenvolvido (aparece na proposta)', escopo, 7, 'descreva as entregas com base no briefing')}
     <div class="mrow">${campo('f-valor', 'Valor do projeto (R$)', l.valor || '', 'number')}${campo('f-mensal', 'Mensalidade (R$, 0 = sem)', l.manutencao || 0, 'number')}</div>
     <div class="mrow">${campo('f-prazo', 'Prazo de entrega', '15 dias úteis')}${campo('f-validade', 'Validade da proposta', '7 dias')}</div>
@@ -167,10 +192,11 @@ window.abrirOrcamentoModal = (slug) => {
 };
 
 window.gerarOrcamento = async (slug) => {
-  const l = lead(slug);
   const valor = parseFloat(v2('f-valor')) || 0;
   const mensal = parseFloat(v2('f-mensal')) || 0;
-  if (!valor) { alert('Informe o valor do projeto.'); return; }
+  if (!valor) { alert('Informe o valor do projeto.'); return; } // valida ANTES de criar o lead
+  const l = slug ? lead(slug) : await resolverCliente('f-cliente', v2('f-tipo') || 'site');
+  if (!l) return;
   const tpl = await fetch('/painel/templates/orcamento.html').then((r) => r.text());
   const html = tpl
     .replaceAll('{{NOME_CLIENTE}}', esc(l.nome))
@@ -188,8 +214,17 @@ window.gerarOrcamento = async (slug) => {
     .replaceAll('{{NOME_PRESTADOR}}', esc(st.assinatura.nome || st.cfg.nome || ''))
     .replace('{{APRESENTACAO}}', esc(st.assinatura.apresentacao || ''))
     .replace('{{WHATSAPP}}', esc(st.assinatura.whatsapp || ''));
-  const r = await api.gerar(slug, 'orcamento', html);
-  await api.patch(slug, { valor, manutencao: mensal || null, status: 'proposta', dataProposta: hoje(), orcamentoEm: hoje() });
+  const r = await api.gerar(l.slug, 'orcamento', html);
+  // cliente fechado/encerrado: só registra o documento — NÃO mexe em valor/manutencao/status
+  // (senão corrompe o Financeiro, que usa esses campos do cliente ativo)
+  const mudancas = { orcamentoEm: hoje() };
+  if (!['fechado', 'encerrado'].includes(l.status)) {
+    mudancas.valor = valor;
+    mudancas.manutencao = mensal || null;
+    mudancas.status = 'proposta';
+    mudancas.dataProposta = hoje();
+  }
+  await api.patch(l.slug, mudancas);
   window.fecharModal2();
   await window.__recarrega();
   window.open(r.url, '_blank');
@@ -202,11 +237,17 @@ window.abrirContratoModal = (slug) => {
   const tipo = l.servico || 'site';
   const dados = briefingDados(l);
   let objeto = OBJETO_CONTRATO[tipo];
+  // pré-preenche o escopo detalhado com o que veio do briefing (respostas do formulário ou texto colado)
+  let escopoBriefing = '';
+  if (dados.respostas && Object.keys(dados.respostas).length) {
+    escopoBriefing = perguntasDe(dados.tipo || tipo)
+      .filter(([id]) => dados.respostas[id]).map(([id]) => dados.respostas[id]).join('; ');
+  } else if (dados.respostas_texto) escopoBriefing = dados.respostas_texto;
   abrirModal2(`<h2>Novo contrato${l.nome ? ' — ' + esc(l.nome) : ''}</h2>
-    ${slug ? '' : selectClientes('f-cliente', null)}
+    ${slug ? '' : selectClienteReabre('abrirContratoModal')}
     ${selectTipo('f-tipo', tipo)}
     ${areaTxt('f-objeto', 'Cláusula do objeto (edite à vontade)', objeto, 5)}
-    ${areaTxt('f-escopo-extra', 'Escopo detalhado (opcional — vira parágrafo do objeto)', dados.respostas_texto ? '' : '', 3, 'ex.: páginas incluídas, funcionalidades acordadas')}
+    ${areaTxt('f-escopo-extra', 'Escopo detalhado (opcional — vira parágrafo do objeto)', escopoBriefing, 3, 'ex.: páginas incluídas, funcionalidades acordadas')}
     <div class="mrow">${campo('f-valor', 'Valor (R$)', l.valor || '', 'number')}${campo('f-mensal', 'Manutenção mensal (R$, 0 = sem cláusula)', l.manutencao || 0, 'number')}</div>
     <div class="mrow">${campo('f-pagamento', 'Forma de pagamento', '50% na assinatura e 50% na entrega')}${campo('f-prazo', 'Prazo de entrega', '15 (quinze) dias úteis')}</div>
     <div class="mrow">${campo('f-doc', 'CPF/CNPJ do cliente', l.docCliente || '', 'text', 'só números ou formatado')}${campo('f-end', 'Endereço do cliente', l.endCliente || '', 'text', 'rua, nº, bairro, cidade/UF')}</div>
@@ -222,11 +263,11 @@ const docLabel = (doc) => ((doc || '').replace(/\D/g, '').length > 11 ? 'inscrit
 
 window.gerarContrato = async (slug) => {
   const tipo = v2('f-tipo');
-  const l = slug ? lead(slug) : await resolverCliente('f-cliente', tipo);
-  if (!l) return;
   const valor = parseFloat(v2('f-valor')) || 0;
   const mensal = parseFloat(v2('f-mensal')) || 0;
-  if (!valor) { alert('Informe o valor do contrato.'); return; }
+  if (!valor) { alert('Informe o valor do contrato.'); return; } // valida ANTES de criar o lead
+  const l = slug ? lead(slug) : await resolverCliente('f-cliente', tipo);
+  if (!l) return;
 
   let n = 0;
   const clausulas = [];

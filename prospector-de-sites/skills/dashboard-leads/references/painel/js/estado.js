@@ -17,6 +17,21 @@ export const COM_PAGINA = ['redesenhado', 'publicado', 'proposta', 'respondeu', 
 // ---- briefing / orçamento / contrato ----
 export const BRIEFING_NOMES = { criado: 'Briefing criado', enviado: 'Briefing enviado', respondido: 'Briefing respondido' };
 
+export function parseBriefing(l) {
+  try { return JSON.parse(l.briefing || '{}'); } catch (e) { return {}; }
+}
+export function temRespostas(l) {
+  const d = parseBriefing(l);
+  return !!(d.respostas_texto || (d.respostas && Object.keys(d.respostas).length));
+}
+// situação do briefing pro filtro: aguardando | naolido | lido
+export function situacaoBriefing(l) {
+  if (!temRespostas(l)) return 'aguardando';
+  return parseBriefing(l).vistoEm ? 'lido' : 'naolido';
+}
+export const briefings = () => fil().filter((l) => l.briefingStatus && l.status !== 'descartado');
+export const orcamentos = () => fil().filter((l) => l.orcamentoEm && l.status !== 'descartado');
+
 export const PERGUNTAS_COMUNS = [
   ['negocio', 'Qual é o nome do seu negócio e o que ele faz?'],
   ['publico', 'Quem é o seu público? (quem compra/usa seus serviços)'],
@@ -70,6 +85,7 @@ export const st = {
   sortAsc: true,
   pag: 1,
   porPag: 'auto',
+  filtroBf: 'todos', // todos | aguardando | naolido | lido
   cfg: {},        // contratante
   hg: {},         // hostgator (sem senha)
   assinatura: {}, // assinatura da proposta (nome, apresentacao, whatsapp)

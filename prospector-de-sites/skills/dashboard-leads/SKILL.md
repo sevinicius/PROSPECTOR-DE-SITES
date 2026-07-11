@@ -72,17 +72,22 @@ EOF
 - **"encerrei o contrato do X"** → `status='encerrado'`.
 - `/contrato` → `contratoStatus='enviado'` + `contratoEm`. Assinou → `'assinado'`. Pagou → `pago=1`.
 
-## Fluxo briefing → orçamento → contrato (aba Contratos do painel)
+## Fluxo briefing → orçamento → contrato (abas Briefings, Orçamentos e Contratos)
 
 O painel faz sozinho (não reimplementar; apenas mantenha o banco coerente se agir via chat):
 
-- **Briefing**: botão "+ Briefing" gera `sites/<slug>/briefing-<slug>.html` (perguntas por tipo de
-  projeto) e marca `briefingStatus='criado'` → usuário envia ao cliente (`'enviado'`) → cliente
-  responde pela própria página (POST `/api/briefing/<slug>/respostas`, vira `'respondido'`) ou o
-  usuário cola as respostas no painel. Respostas ficam em `briefing` (JSON).
-- **Orçamento**: de um briefing respondido, "Gerar orçamento" cria `orcamento-<slug>.html`,
-  grava `valor`/`manutencao`, `orcamentoEm` e move o lead pra `status='proposta'` + `dataProposta`.
-- **Contrato manual**: botão "+ Contrato" usa `painel/templates/contrato.html` — Cláusula do
+- **Aba Briefings**: botão "+ Briefing" gera `sites/<slug>/briefing-<slug>.html` (perguntas por
+  tipo de projeto) e marca `briefingStatus='criado'` → usuário envia ao cliente (`'enviado'`) →
+  cliente responde pela própria página (POST `/api/briefing/<slug>/respostas`, vira `'respondido'`
+  com `respondidoEm`) ou o usuário cola as respostas no painel. Respostas ficam em `briefing`
+  (JSON: `{tipo, criadoEm, respostas|respostas_texto, respondidoEm, vistoEm}`) e aparecem na
+  listagem. **Filtros**: Aguardando resposta · Respondidos — não lidos (`respondido` sem
+  `vistoEm`; resposta nova zera o visto) · Lidos (abrir as respostas marca `vistoEm`).
+- **Aba Orçamentos**: de um briefing respondido (ou direto via "+ Orçamento"), gera
+  `orcamento-<slug>.html` (documento formal), grava `valor`/`manutencao`/`orcamentoEm` e move o
+  lead pra `status='proposta'` + `dataProposta` (cliente já fechado/encerrado NÃO volta pro
+  funil). A listagem vincula cada orçamento ao briefing de origem (Ver respostas).
+- **Aba Contratos**: botão "+ Contrato" usa `painel/templates/contrato.html` — Cláusula do
   Objeto pré-preenchida POR TIPO de serviço e editável, manutenção opcional, cláusulas extras;
   grava `sites/<slug>/contrato-<slug>.html` e marca `contratoStatus='gerado'` + `contratoEm`.
   Status do contrato: `pendente | gerado | enviado | assinado`.
