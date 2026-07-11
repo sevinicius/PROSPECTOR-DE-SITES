@@ -73,7 +73,13 @@ class App(SimpleHTTPRequestHandler):
             rows = [dict(r) for r in c.execute('SELECT * FROM leads').fetchall()]; c.close()
             return self._json(200, rows)
         if self.path in ('/', '', '/dashboard.html'):
-            self.path = '/painel/index.html' if os.path.isdir(os.path.join(PASTA, 'painel')) else '/dashboard.html'
+            if os.path.isdir(os.path.join(PASTA, 'painel')):
+                # redireciona pra /painel/ — assim os links relativos (css/, js/) resolvem certo
+                self.send_response(301)
+                self.send_header('Location', '/painel/')
+                self.end_headers()
+                return
+            self.path = '/dashboard.html'
         return SimpleHTTPRequestHandler.do_GET(self)
     def do_POST(self):
         if self.path.split('?')[0] == '/api/leads':

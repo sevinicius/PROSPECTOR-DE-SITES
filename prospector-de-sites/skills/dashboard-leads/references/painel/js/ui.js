@@ -18,7 +18,7 @@ export function pillCt(ct) {
 export function acoes(l) {
   const a = [];
   if (l.siteAntigo) a.push(`<a href="${esc(l.siteAntigo)}" target="_blank">antigo</a>`);
-  if (l.slug && COM_PAGINA.includes(l.status)) {
+  if (l.slug && COM_PAGINA.includes(l.status) && (l.servico || 'site') === 'site') {
     a.push(`<a href="/sites/${l.slug}/${l.slug}.html" target="_blank">página</a>`);
     a.push(`<a href="/sites/${l.slug}/${l.slug}-editor.html" target="_blank">editar site</a>`);
   }
