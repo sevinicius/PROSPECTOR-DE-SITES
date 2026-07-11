@@ -170,8 +170,12 @@ tr:hover td{background:var(--painel-2)}
 .btn-ct.baixar:hover{border-color:var(--ambar);color:var(--ambar)}
 .btn-ct.ass{background:var(--ok-fundo);color:var(--ok)}
 .ct-pendente{background:var(--fundo);color:var(--apagado);border:1px solid var(--linha)}
+.ct-gerado{background:var(--painel-2);color:var(--tinta-2);border:1px solid var(--linha-forte)}
 .ct-enviado{background:var(--ambar-fundo);color:var(--ambar)}
 .ct-assinado{background:var(--ok-fundo);color:var(--ok)}
+.bf-criado{background:var(--painel-2);color:var(--tinta-2);border:1px solid var(--linha-forte)}
+.bf-enviado{background:var(--ambar-fundo);color:var(--ambar)}
+.bf-respondido{background:var(--ok-fundo);color:var(--ok)}
 .fin-check{width:16px;height:16px;accent-color:var(--ok);cursor:pointer}
 select.mini{border:1px solid var(--linha);border-radius:var(--raio);padding:4px 8px;font-size:11.5px;background:var(--painel-2);color:var(--tinta);font-family:var(--ui);cursor:pointer}
 
@@ -199,6 +203,20 @@ select.mini{border:1px solid var(--linha);border-radius:var(--raio);padding:4px 
 #modal .mbot button{border:0;border-radius:var(--raio);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--ui)}
 #modal .salvar{background:var(--ambar);color:#131511}
 #modal .cancelar{background:var(--painel-2);color:var(--tinta)}
+
+/* ---------- modal genérico (fluxos: briefing / orçamento / contrato) ---------- */
+#modal2-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:55}
+#modal2-bg.aberto{display:flex}
+#modal2{background:var(--painel);border:1px solid var(--linha-forte);border-radius:var(--raio-g);padding:22px;width:560px;max-width:94vw;max-height:88vh;overflow-y:auto}
+#modal2 h2{font-family:var(--display);font-size:17px;margin:0 0 12px;font-weight:600}
+#modal2 label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--apagado);margin:10px 0 4px}
+#modal2 input,#modal2 select,#modal2 textarea{width:100%;border:1px solid var(--linha);border-radius:var(--raio);padding:8px 10px;font-size:13px;font-family:var(--ui);color:var(--tinta);background:var(--painel-2)}
+#modal2 input:focus,#modal2 select:focus,#modal2 textarea:focus{outline:none;border-color:var(--ambar)}
+#modal2 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+#modal2 .mbot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+#modal2 .mbot button{border:0;border-radius:var(--raio);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--ui)}
+#modal2 .salvar{background:var(--ambar);color:#131511}
+#modal2 .cancelar{background:var(--painel-2);color:var(--tinta)}
 
 /* ---------- config ---------- */
 .cfg-input{width:100%;border:1px solid var(--linha);border-radius:var(--raio);padding:9px 11px;font-size:13.5px;font-family:var(--ui);color:var(--tinta);background:var(--painel-2)}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!-- TEMPLATE DE CONTRATO (painel VF) — placeholders preenchidos pelo painel. Imprimir: Ctrl+P > Salvar como PDF (A4) -->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Contrato de Prestação de Serviços — {{NOME_CLIENTE}}</title>
+<style>
+@page{size:A4;margin:2.2cm}
+body{font-family:Georgia,'Times New Roman',serif;color:#1a1a1a;line-height:1.65;font-size:12.5pt;margin:0;background:#E9E7E1;padding:46px 16px}
+.folha{background:#fff;max-width:21cm;margin:0 auto;padding:2.2cm;box-shadow:0 12px 44px rgba(0,0,0,.18);border-radius:4px}
+.print-bar{position:fixed;top:14px;right:16px;display:flex;gap:8px;font-family:Arial,sans-serif;z-index:10}
+.print-bar button{border:0;border-radius:6px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;background:#E0A83C;color:#131511;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.print-bar button:hover{background:#F0BC55}
+h1{font-size:15pt;text-align:center;text-transform:uppercase;letter-spacing:.05em;margin:0 0 28px}
+h2{font-size:12.5pt;margin:22px 0 8px}
+p{margin:8px 0;text-align:justify}
+.partes p{margin:6px 0}
+.assinaturas{margin-top:56px;display:flex;gap:40px;justify-content:space-between;page-break-inside:avoid}
+.assinaturas div{flex:1;text-align:center}
+.linha{border-top:1px solid #1a1a1a;margin-bottom:6px;padding-top:6px}
+.aviso{margin-top:36px;font-size:9pt;color:#666;border-top:1px solid #ccc;padding-top:10px;font-family:Arial,sans-serif}
+.local-data{margin-top:40px}
+@media print{.aviso{position:fixed;bottom:0}body{background:#fff;padding:0}.folha{box-shadow:none;border-radius:0;max-width:none;padding:0}.print-bar{display:none}}
+</style>
+</head>
+<body>
+<div class="print-bar"><button onclick="window.print()">Imprimir / Salvar PDF</button></div>
+<div class="folha">
+<h1>Contrato de Prestação de Serviços<br>{{TITULO_SERVICO}}</h1>
+
+<div class="partes">
+<p><b>CONTRATANTE:</b> {{NOME_CLIENTE}}, {{CPF_CNPJ_CLIENTE_LABEL}} nº {{CPF_CNPJ_CLIENTE}}, com endereço em {{ENDERECO_CLIENTE}}.</p>
+<p><b>CONTRATADO(A):</b> {{NOME_PRESTADOR}}, {{CPF_CNPJ_PRESTADOR_LABEL}} nº {{CPF_CNPJ_PRESTADOR}}, com endereço em {{ENDERECO_PRESTADOR}}.</p>
+</div>
+
+<p>As partes acima identificadas celebram o presente contrato de prestação de serviços, que se regerá pelas cláusulas seguintes.</p>
+
+{{CLAUSULAS}}
+
+<p class="local-data">{{CIDADE_ASSINATURA}}, {{DATA_EXTENSO}}.</p>
+
+<div class="assinaturas">
+  <div><div class="linha"></div><b>{{NOME_CLIENTE}}</b><br>Contratante</div>
+  <div><div class="linha"></div><b>{{NOME_PRESTADOR}}</b><br>Contratado(a)</div>
+</div>
+
+<p class="aviso">Este documento é uma minuta base gerada automaticamente para facilitar a formalização entre as partes. Recomenda-se a revisão por profissional jurídico antes da assinatura.</p>
+</div>
+</body>
+</html>

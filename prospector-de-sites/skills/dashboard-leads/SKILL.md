@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS leads(
   docCliente TEXT, endCliente TEXT,
   servico TEXT DEFAULT 'site', origem TEXT DEFAULT 'prospeccao',
   custoSetup REAL DEFAULT 0, custoMensal REAL DEFAULT 0,
+  briefingStatus TEXT, briefing TEXT, orcamentoEm TEXT,
   atualizado TEXT DEFAULT (datetime('now','localtime')));
 ```
 
@@ -70,6 +71,22 @@ EOF
   propôs), dados iniciais + proposta do projeto em `obs`.
 - **"encerrei o contrato do X"** → `status='encerrado'`.
 - `/contrato` → `contratoStatus='enviado'` + `contratoEm`. Assinou → `'assinado'`. Pagou → `pago=1`.
+
+## Fluxo briefing → orçamento → contrato (aba Contratos do painel)
+
+O painel faz sozinho (não reimplementar; apenas mantenha o banco coerente se agir via chat):
+
+- **Briefing**: botão "+ Briefing" gera `sites/<slug>/briefing-<slug>.html` (perguntas por tipo de
+  projeto) e marca `briefingStatus='criado'` → usuário envia ao cliente (`'enviado'`) → cliente
+  responde pela própria página (POST `/api/briefing/<slug>/respostas`, vira `'respondido'`) ou o
+  usuário cola as respostas no painel. Respostas ficam em `briefing` (JSON).
+- **Orçamento**: de um briefing respondido, "Gerar orçamento" cria `orcamento-<slug>.html`,
+  grava `valor`/`manutencao`, `orcamentoEm` e move o lead pra `status='proposta'` + `dataProposta`.
+- **Contrato manual**: botão "+ Contrato" usa `painel/templates/contrato.html` — Cláusula do
+  Objeto pré-preenchida POR TIPO de serviço e editável, manutenção opcional, cláusulas extras;
+  grava `sites/<slug>/contrato-<slug>.html` e marca `contratoStatus='gerado'` + `contratoEm`.
+  Status do contrato: `pendente | gerado | enviado | assinado`.
+- Endpoint genérico de geração: `POST /api/gerar/<slug>` `{arquivo: contrato|briefing|orcamento, html}`.
 
 ## Espelho na Mente Global (se o projeto estiver registrado na esteira)
 

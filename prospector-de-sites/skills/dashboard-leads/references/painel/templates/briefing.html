@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!-- TEMPLATE DE BRIEFING (painel VF) — o cliente responde e envia por WhatsApp / copia / envia direto (quando servido pelo painel). -->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briefing — {{NOME_CLIENTE}}</title>
+<style>
+:root{--fundo:#131511;--painel:#1B1E19;--painel2:#22261F;--linha:#2C3128;--tinta:#EAE6DA;--tinta2:#ABA79A;--apagado:#7D7A6F;--ambar:#E0A83C;--ok:#8FBF7F}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--tinta);font-family:-apple-system,'Segoe UI',Roboto,Inter,sans-serif;font-size:15px;line-height:1.6;padding:34px 16px 80px}
+.caixa{max-width:680px;margin:0 auto}
+.cabeca{border-bottom:1px solid var(--linha);padding-bottom:20px;margin-bottom:26px}
+.monograma{display:inline-flex;width:40px;height:40px;border:1.5px solid var(--ambar);color:var(--ambar);align-items:center;justify-content:center;font-family:Georgia,serif;font-size:17px;font-weight:600;border-radius:6px;margin-bottom:14px}
+h1{font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:600;margin:0 0 8px}
+.sub{color:var(--tinta2);font-size:14px;margin:0}
+h2{font-family:Georgia,serif;font-size:16px;font-weight:600;margin:28px 0 4px;color:var(--ambar)}
+label{display:block;font-weight:600;margin:20px 0 6px}
+label .dica{display:block;font-weight:400;font-size:12.5px;color:var(--apagado);margin-top:2px}
+textarea,input{width:100%;background:var(--painel2);border:1px solid var(--linha);border-radius:6px;color:var(--tinta);font-family:inherit;font-size:14.5px;padding:11px 13px}
+textarea{min-height:84px;resize:vertical}
+textarea:focus,input:focus{outline:none;border-color:var(--ambar)}
+.acoes{position:sticky;bottom:0;background:linear-gradient(transparent,var(--fundo) 30%);padding:24px 0 8px;margin-top:34px;display:flex;gap:10px;flex-wrap:wrap}
+button{border:0;border-radius:6px;padding:13px 22px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.prim{background:var(--ambar);color:#131511}
+.prim:hover{background:#F0BC55}
+.sec{background:var(--painel2);color:var(--tinta);border:1px solid var(--linha)}
+.sec:hover{border-color:var(--ambar);color:var(--ambar)}
+#msg{display:none;margin-top:14px;padding:13px 15px;border-radius:6px;font-weight:600;font-size:14px}
+#msg.ok{display:block;background:rgba(143,191,127,.13);color:var(--ok)}
+#msg.info{display:block;background:rgba(224,168,60,.12);color:var(--ambar)}
+</style>
+</head>
+<body>
+<div class="caixa">
+  <div class="cabeca">
+    <div class="monograma">VF</div>
+    <h1>Briefing do seu projeto</h1>
+    <p class="sub">Olá, {{NOME_CLIENTE}}! Sou {{NOME_PRESTADOR}}. Responda as perguntas abaixo do seu jeito — quanto mais detalhe, mais preciso fica o orçamento que vou te enviar. Leva uns 5 minutos.</p>
+  </div>
+  <form id="form">{{CAMPOS}}</form>
+  <div class="acoes">
+    <button type="button" class="prim" onclick="enviarWhats()">Enviar respostas por WhatsApp</button>
+    <button type="button" class="sec" onclick="copiar()">Copiar respostas</button>
+  </div>
+  <div id="msg"></div>
+</div>
+<script id="meta" type="application/json">{{META}}</script>
+<script>
+var META = JSON.parse(document.getElementById('meta').textContent);
+function respostas() {
+  var out = {};
+  META.perguntas.forEach(function (p) {
+    var el = document.getElementById('q-' + p[0]);
+    out[p[0]] = el ? el.value.trim() : '';
+  });
+  return out;
+}
+function texto() {
+  var r = respostas();
+  var linhas = ['*Briefing — ' + META.nome + ' (' + META.tipoNome + ')*', ''];
+  META.perguntas.forEach(function (p) {
+    linhas.push('*' + p[1] + '*');
+    linhas.push(r[p[0]] || '(sem resposta)');
+    linhas.push('');
+  });
+  return linhas.join('\n');
+}
+function enviarLocal() {
+  // quando o cliente abre pelo painel (localhost), salva direto no banco
+  return fetch('/api/briefing/' + META.slug + '/respostas', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ respostas: respostas() })
+  }).then(function (r) { if (!r.ok) throw 0; return true; });
+}
+function enviarWhats() {
+  var m = document.getElementById('msg');
+  enviarLocal().then(function () {
+    m.className = 'ok'; m.textContent = 'Respostas registradas no painel! Abrindo o WhatsApp como confirmação…';
+  }).catch(function () {}).then(function () {
+    window.open('https://wa.me/' + META.whatsapp + '?text=' + encodeURIComponent(texto()), '_blank');
+    if (!m.className) { m.className = 'info'; m.textContent = 'Suas respostas foram montadas na mensagem do WhatsApp — é só enviar.'; }
+  });
+}
+function copiar() {
+  var m = document.getElementById('msg');
+  enviarLocal().then(function () {
+    m.className = 'ok'; m.textContent = 'Respostas registradas no painel e copiadas!';
+  }).catch(function () {
+    m.className = 'info'; m.textContent = 'Respostas copiadas — cole e envie pra ' + META.nomePrestador + '.';
+  });
+  var ta = document.createElement('textarea');
+  ta.value = texto(); document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  try { navigator.clipboard && navigator.clipboard.writeText(ta.value); } catch (e) {}
+  document.body.removeChild(ta);
+}
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 """Prospector — servidor local do dashboard (SQLite). Sem dependências: só Python padrão.
 Uso: python dashboard-server.py  (ou duplo clique em iniciar-dashboard.bat)
 Abre em http://localhost:8765 — edições, exclusões e drag&drop salvam no prospector.db"""
-import json, sqlite3, os, sys, webbrowser
+import json, sqlite3, os, re, sys, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 PASTA = os.path.dirname(os.path.abspath(__file__))
@@ -18,7 +18,8 @@ PORTA = 8765
 CAMPOS = ['slug','nome','nicho','cidade','nota','avaliacoes','email','telefone','whatsapp',
           'siteAntigo','motivo','status','urlNova','dataProposta','valor','obs',
           'contratoStatus','contratoEm','manutencao','pago','docCliente','endCliente',
-          'servico','origem','custoSetup','custoMensal']
+          'servico','origem','custoSetup','custoMensal',
+          'briefingStatus','briefing','orcamentoEm']
 
 def conexao():
     c = sqlite3.connect(DB)
@@ -29,7 +30,8 @@ def conexao():
         contratoStatus TEXT DEFAULT 'pendente', contratoEm TEXT, manutencao REAL, pago INTEGER DEFAULT 0,
         atualizado TEXT DEFAULT (datetime('now','localtime')))''')
     for col, tipo in [('contratoStatus',"TEXT DEFAULT 'pendente'"),('contratoEm','TEXT'),('manutencao','REAL'),('pago','INTEGER DEFAULT 0'),('docCliente','TEXT'),('endCliente','TEXT'),
-                      ('servico',"TEXT DEFAULT 'site'"),('origem',"TEXT DEFAULT 'prospeccao'"),('custoSetup','REAL DEFAULT 0'),('custoMensal','REAL DEFAULT 0')]:
+                      ('servico',"TEXT DEFAULT 'site'"),('origem',"TEXT DEFAULT 'prospeccao'"),('custoSetup','REAL DEFAULT 0'),('custoMensal','REAL DEFAULT 0'),
+                      ('briefingStatus','TEXT'),('briefing','TEXT'),('orcamentoEm','TEXT')]:
         try: c.execute('ALTER TABLE leads ADD COLUMN %s %s' % (col, tipo))
         except sqlite3.OperationalError: pass
     return c
@@ -67,7 +69,8 @@ class App(SimpleHTTPRequestHandler):
             hg = dict(cfg.get('hostgator', {}))
             hg['senhaDefinida'] = bool(hg.get('senha'))
             hg.pop('senha', None)  # a senha NUNCA sai do arquivo
-            return self._json(200, {'contratante': cfg.get('contratante', {}), 'hostgator': hg})
+            return self._json(200, {'contratante': cfg.get('contratante', {}), 'hostgator': hg,
+                                    'assinatura': cfg.get('assinatura', {})})
         if self.path.split('?')[0] == '/api/leads':
             c = conexao(); c.row_factory = sqlite3.Row
             rows = [dict(r) for r in c.execute('SELECT * FROM leads').fetchall()]; c.close()
@@ -82,11 +85,42 @@ class App(SimpleHTTPRequestHandler):
             self.path = '/dashboard.html'
         return SimpleHTTPRequestHandler.do_GET(self)
     def do_POST(self):
+        partes = self.path.split('?')[0].split('/')
         if self.path.split('?')[0] == '/api/leads':
             l = self._corpo(); c = conexao()
             c.execute('INSERT OR REPLACE INTO leads (%s) VALUES (%s)' % (','.join(CAMPOS), ','.join('?'*len(CAMPOS))),
                       [l.get(k) for k in CAMPOS])
             c.commit(); c.close(); return self._json(200, {'ok': True})
+        # POST /api/gerar/<slug>  {arquivo: contrato|briefing|orcamento, html} -> grava sites/<slug>/<arquivo>-<slug>.html
+        if len(partes) == 4 and partes[1] == 'api' and partes[2] == 'gerar':
+            slug = partes[3]
+            corpo = self._corpo()
+            arquivo = corpo.get('arquivo', '')
+            html = corpo.get('html', '')
+            if not re.fullmatch(r'[a-z0-9-]{1,60}', slug or ''):
+                return self._json(400, {'erro': 'slug inválido'})
+            if arquivo not in ('contrato', 'briefing', 'orcamento') or not html:
+                return self._json(400, {'erro': 'arquivo deve ser contrato|briefing|orcamento e html não pode ser vazio'})
+            pasta = os.path.join(PASTA, 'sites', slug)
+            os.makedirs(pasta, exist_ok=True)
+            caminho = os.path.join(pasta, '%s-%s.html' % (arquivo, slug))
+            open(caminho, 'w', encoding='utf-8').write(html)
+            return self._json(200, {'ok': True, 'url': '/sites/%s/%s-%s.html' % (slug, arquivo, slug)})
+        # POST /api/briefing/<slug>/respostas  {respostas:{...}} -> salva no lead e marca respondido
+        if len(partes) == 5 and partes[1] == 'api' and partes[2] == 'briefing' and partes[4] == 'respostas':
+            slug = partes[3]
+            corpo = self._corpo()
+            c = conexao()
+            atual = c.execute('SELECT briefing FROM leads WHERE slug=?', (slug,)).fetchone()
+            if atual is None:
+                c.close(); return self._json(404, {'erro': 'lead não encontrado'})
+            try: dados = json.loads(atual[0]) if atual[0] else {}
+            except Exception: dados = {}
+            dados['respostas'] = corpo.get('respostas', {})
+            c.execute('UPDATE leads SET briefing=?, briefingStatus=?, atualizado=datetime("now","localtime") WHERE slug=?',
+                      (json.dumps(dados, ensure_ascii=False), 'respondido', slug))
+            c.commit(); c.close()
+            return self._json(200, {'ok': True})
         return self._json(404, {'erro': 'rota'})
     def do_PUT(self):
         if self.path.split('?')[0] == '/api/config':

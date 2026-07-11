@@ -11,6 +11,7 @@ import { vFollowup } from './views/followup.js';
 import { vContratos } from './views/contratos.js';
 import { vFinanceiro } from './views/financeiro.js';
 import { vConfig } from './views/config.js';
+import './fluxos.js';
 
 const VIEWS = {
   geral: ['Visão geral', vGeral], pipeline: ['Pipeline', vPipeline], followup: ['Follow-ups', vFollowup],
@@ -53,6 +54,7 @@ export function render() {
 export function recarrega() {
   return api.leads().then((j) => { st.leads = j; render(); });
 }
+window.__recarrega = recarrega;
 
 function salvar(slug, mudancas) { api.patch(slug, mudancas).then(recarrega); }
 
@@ -213,6 +215,7 @@ api.leads().then((leads) => {
 }).then((c) => {
   st.cfg = (c && c.contratante) || {};
   st.hg = (c && c.hostgator) || {};
+  st.assinatura = (c && c.assinatura) || {};
   if (st.cfg.nome) document.getElementById('marca-nome').textContent = st.cfg.nome.split(' ').slice(0, 2).join(' ');
   render();
 }).catch(() => {
