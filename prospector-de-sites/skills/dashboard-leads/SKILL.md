@@ -106,6 +106,19 @@ Mente via MCP `saam-esteira-memory` (ou `mente-bridge.cjs`):
 SQLite = operacional (painel). Mente = memória semântica (qualquer sessão sabe quem são os clientes).
 Se a Mente estiver offline, siga o fallback do CLAUDE.md global (acumule e deposite depois).
 
+## Capa do projeto (imagem da página de login/inicial)
+
+Na aba **Projetos**, cada card usa como imagem o arquivo `sites/<slug>/capa.png` — um
+screenshot da página de login/inicial do projeto. Se o arquivo não existir, o card cai no
+fallback (iframe ao vivo para sites; nome do serviço para sistema/automação).
+
+**Convenção — todo projeto deve ter `capa.png`:** ao adicionar/entregar um projeto, gere o
+screenshot da tela de login/inicial e salve em `sites/<slug>/capa.png`. Formas:
+- **Site (`/redesenhar`)**: screenshot da própria página gerada `sites/<slug>/<slug>.html`.
+- **Sistema/automação**: screenshot da tela de login do sistema (ex.: protótipo/app do cliente).
+- Captura via navegador headless (Playwright/Chromium): abrir a página → `screenshot` do viewport
+  (~1280×770, proporção do card) → salvar em `sites/<slug>/capa.png`.
+
 ## O que o painel faz sozinho (não reimplementar)
 
 Kanban drag & drop, edição em modal, botão "+ Cliente" (fechado ou potencial), exclusão, busca,

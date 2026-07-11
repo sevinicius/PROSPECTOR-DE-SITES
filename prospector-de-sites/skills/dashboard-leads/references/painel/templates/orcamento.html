@@ -20,7 +20,7 @@ h1{font-family:Georgia,'Times New Roman',serif;font-size:27px;font-weight:600;ma
 .num{font-family:'IBM Plex Mono',Consolas,monospace;font-size:11px;color:var(--apagado);text-align:right}
 h2{font-family:Georgia,serif;font-size:16px;font-weight:600;margin:26px 0 10px;color:var(--ambar)}
 .escopo{white-space:pre-wrap;background:var(--painel);border:1px solid var(--linha);border-radius:8px;padding:16px 18px}
-.valores{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.valores{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin:14px 0}
 .valor-caixa{background:var(--painel);border:1px solid var(--linha);border-radius:8px;padding:16px 18px}
 .valor-caixa .v{font-family:Georgia,serif;font-size:24px;color:var(--ambar);font-weight:600}
 .valor-caixa .l{color:var(--tinta2);font-size:12px;margin-top:4px}
@@ -29,7 +29,24 @@ td{padding:8px 4px;border-bottom:1px solid var(--linha)}
 td:last-child{text-align:right;color:var(--tinta2)}
 .rodape{margin-top:34px;border-top:1px solid var(--linha);padding-top:18px;color:var(--tinta2);font-size:13px}
 .rodape b{color:var(--tinta)}
-@media print{body{background:#fff;color:#1a1a1a}.print-bar{display:none}:root{--tinta:#1a1a1a;--tinta2:#444;--apagado:#777;--linha:#ddd;--painel:#f7f6f2;--ambar:#8a6414}}
+@media print{
+  @page{size:A4;margin:1.1cm}
+  :root{--tinta:#1a1a1a;--tinta2:#444;--apagado:#777;--linha:#ddd;--painel:#f7f6f2;--ambar:#8a6414}
+  body{background:#fff;color:#1a1a1a;padding:0;font-size:10.5pt;line-height:1.38}
+  .print-bar{display:none}
+  .folha{max-width:none}
+  .cabeca{padding-bottom:10px;margin-bottom:12px}
+  h1{font-size:19pt;margin:6px 0 2px}
+  h2{font-size:12.5pt;margin:12px 0 5px}
+  .escopo{padding:9px 12px;border-radius:6px}
+  .valores{gap:8px;margin:8px 0}
+  .valor-caixa{padding:9px 12px}
+  .valor-caixa .v{font-size:16pt}
+  .valor-caixa .l{font-size:9pt}
+  td{padding:4px 4px}
+  .rodape{margin-top:14px;padding-top:9px;font-size:10pt}
+  .escopo,.valores,.rodape,table,h2{page-break-inside:avoid}
+}
 </style>
 </head>
 <body>
@@ -48,6 +65,7 @@ td:last-child{text-align:right;color:var(--tinta2)}
   <div class="valores">
     <div class="valor-caixa"><div class="v">R$ {{VALOR}}</div><div class="l">desenvolvimento do projeto{{FORMA_PAGAMENTO_NOTA}}</div></div>
     {{CAIXA_MENSALIDADE}}
+    {{CAIXA_SERVIDOR}}
   </div>
 
   <h2>Condições</h2>

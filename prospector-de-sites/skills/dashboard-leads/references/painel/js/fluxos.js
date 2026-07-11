@@ -185,6 +185,7 @@ window.abrirOrcamentoModal = (slug) => {
     ${seletor}
     ${areaTxt('f-escopo', 'O que será desenvolvido (aparece na proposta)', escopo, 7, 'descreva as entregas com base no briefing')}
     <div class="mrow">${campo('f-valor', 'Valor do projeto (R$)', l.valor || '', 'number')}${campo('f-mensal', 'Mensalidade (R$, 0 = sem)', l.manutencao || 0, 'number')}</div>
+    <div class="mrow">${campo('f-servidor', 'Servidor/hospedagem (R$/ano, 0 = sem)', 0, 'number', 'ex.: 600')}${campo('f-mensal-inicio', 'Mensalidade começa', 'no mês seguinte à entrega')}</div>
     <div class="mrow">${campo('f-prazo', 'Prazo de entrega', '15 dias úteis')}${campo('f-validade', 'Validade da proposta', '7 dias')}</div>
     <div class="mrow">${campo('f-pagamento', 'Forma de pagamento', '50% para iniciar e 50% na entrega')}${campo('f-ajustes', 'Ajustes inclusos', '2 rodadas de ajustes')}</div>
     <div class="mbot"><button class="cancelar" onclick="fecharModal2()">Cancelar</button>
@@ -198,13 +199,21 @@ window.gerarOrcamento = async (slug) => {
   const l = slug ? lead(slug) : await resolverCliente('f-cliente', v2('f-tipo') || 'site');
   if (!l) return;
   // linhas de condições — só entram as preenchidas (ex.: sem "ajustes" a linha some)
+  const servidorAno = parseFloat(v2('f-servidor')) || 0;
+  const mensalInicio = v2('f-mensal-inicio');
   const linhas = [
     ['Prazo de entrega', v2('f-prazo')],
     ['Forma de pagamento', v2('f-pagamento')],
+    ['Início da mensalidade', mensal ? mensalInicio : ''],
+    ['Servidor/hospedagem', servidorAno ? `R$ ${servidorAno.toLocaleString('pt-BR')}/ano (pago pelo cliente à hospedagem)` : ''],
     ['Validade desta proposta', v2('f-validade') || '7 dias'],
     ['Ajustes inclusos', v2('f-ajustes')],
   ].filter(([, val]) => val)
     .map(([rot, val]) => `<tr><td>${rot}</td><td>${esc(val)}</td></tr>`).join('');
+  const caixaMensal = mensal
+    ? `<div class="valor-caixa"><div class="v">R$ ${mensal.toLocaleString('pt-BR')}/mês</div><div class="l">manutenção e suporte${mensalInicio ? ' · ' + esc(mensalInicio) : ''}</div></div>` : '';
+  const caixaServidor = servidorAno
+    ? `<div class="valor-caixa"><div class="v">R$ ${servidorAno.toLocaleString('pt-BR')}/ano</div><div class="l">servidor/hospedagem (pago à hospedagem)</div></div>` : '';
   const tpl = await fetch('/painel/templates/orcamento.html').then((r) => r.text());
   const html = tpl
     .replaceAll('{{NOME_CLIENTE}}', esc(l.nome))
@@ -214,8 +223,8 @@ window.gerarOrcamento = async (slug) => {
     .replace('{{ESCOPO}}', esc(v2('f-escopo')))
     .replace('{{VALOR}}', valor.toLocaleString('pt-BR'))
     .replace('{{FORMA_PAGAMENTO_NOTA}}', '')
-    .replace('{{CAIXA_MENSALIDADE}}', mensal
-      ? `<div class="valor-caixa"><div class="v">R$ ${mensal.toLocaleString('pt-BR')}/mês</div><div class="l">manutenção e suporte contínuos</div></div>` : '')
+    .replace('{{CAIXA_MENSALIDADE}}', caixaMensal)
+    .replace('{{CAIXA_SERVIDOR}}', caixaServidor)
     .replace('{{LINHAS_CONDICOES}}', linhas)
     .replaceAll('{{NOME_PRESTADOR}}', esc(st.assinatura.nome || st.cfg.nome || ''))
     .replace('{{APRESENTACAO}}', esc(st.assinatura.apresentacao || ''))

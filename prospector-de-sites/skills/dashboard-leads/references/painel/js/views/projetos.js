@@ -9,9 +9,14 @@ export function vProjetos() {
   return '<div class="grade-projetos">' + ls.map((l) => {
     const temPagina = l.slug && COM_PAGINA.includes(l.status) && (l.servico || 'site') === 'site';
     const pg = `/sites/${l.slug}/${l.slug}.html`;
-    const prev = temPagina
-      ? `<div class="prev"><iframe src="${pg}" loading="lazy"></iframe></div>`
-      : `<div class="prev sem">${(SERVICOS[l.servico] || 'Projeto')}</div>`;
+    // capa = screenshot da página de login/inicial (sites/<slug>/capa.png). Se não existir,
+    // a <img> é removida (onerror) e aparece o fallback embaixo: iframe (site) ou nome do serviço.
+    const fallback = temPagina
+      ? `<iframe src="${pg}" loading="lazy"></iframe>`
+      : `<span class="sem-rotulo">${SERVICOS[l.servico] || 'Projeto'}</span>`;
+    const prev = `<div class="prev${temPagina ? '' : ' sem'}">
+      <img class="capa" src="/sites/${l.slug}/capa.png" alt="Página inicial de ${esc(l.nome)}" loading="lazy" onerror="this.remove()">
+      ${fallback}</div>`;
     const prim = l.urlNova
       ? `<a class="prim" href="${esc(l.urlNova)}" target="_blank">Ver no ar ↗</a>`
       : (temPagina ? `<a class="prim" href="${pg}" target="_blank">Ver página</a>` : `<a class="prim" href="#" onclick="abrirEdit('${l.slug}');return false">Detalhes</a>`);
