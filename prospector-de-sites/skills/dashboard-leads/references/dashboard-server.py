@@ -17,7 +17,8 @@ def ler_config():
 PORTA = 8765
 CAMPOS = ['slug','nome','nicho','cidade','nota','avaliacoes','email','telefone','whatsapp',
           'siteAntigo','motivo','status','urlNova','dataProposta','valor','obs',
-          'contratoStatus','contratoEm','manutencao','pago','docCliente','endCliente']
+          'contratoStatus','contratoEm','manutencao','pago','docCliente','endCliente',
+          'servico','origem','custoSetup','custoMensal']
 
 def conexao():
     c = sqlite3.connect(DB)
@@ -27,7 +28,8 @@ def conexao():
         status TEXT DEFAULT 'novo', urlNova TEXT, dataProposta TEXT, valor REAL, obs TEXT,
         contratoStatus TEXT DEFAULT 'pendente', contratoEm TEXT, manutencao REAL, pago INTEGER DEFAULT 0,
         atualizado TEXT DEFAULT (datetime('now','localtime')))''')
-    for col, tipo in [('contratoStatus',"TEXT DEFAULT 'pendente'"),('contratoEm','TEXT'),('manutencao','REAL'),('pago','INTEGER DEFAULT 0'),('docCliente','TEXT'),('endCliente','TEXT')]:
+    for col, tipo in [('contratoStatus',"TEXT DEFAULT 'pendente'"),('contratoEm','TEXT'),('manutencao','REAL'),('pago','INTEGER DEFAULT 0'),('docCliente','TEXT'),('endCliente','TEXT'),
+                      ('servico',"TEXT DEFAULT 'site'"),('origem',"TEXT DEFAULT 'prospeccao'"),('custoSetup','REAL DEFAULT 0'),('custoMensal','REAL DEFAULT 0')]:
         try: c.execute('ALTER TABLE leads ADD COLUMN %s %s' % (col, tipo))
         except sqlite3.OperationalError: pass
     return c
@@ -70,8 +72,8 @@ class App(SimpleHTTPRequestHandler):
             c = conexao(); c.row_factory = sqlite3.Row
             rows = [dict(r) for r in c.execute('SELECT * FROM leads').fetchall()]; c.close()
             return self._json(200, rows)
-        if self.path in ('/', ''):
-            self.path = '/dashboard.html'
+        if self.path in ('/', '', '/dashboard.html'):
+            self.path = '/painel/index.html' if os.path.isdir(os.path.join(PASTA, 'painel')) else '/dashboard.html'
         return SimpleHTTPRequestHandler.do_GET(self)
     def do_POST(self):
         if self.path.split('?')[0] == '/api/leads':

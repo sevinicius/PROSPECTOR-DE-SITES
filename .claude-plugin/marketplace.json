@@ -1,21 +1,21 @@
 {
-  "name": "arrecheneto-plugins",
+  "name": "sevinicius-plugins",
   "owner": {
-    "name": "Helio Arreche"
+    "name": "Vinicius Fernandes de Jesus"
   },
   "metadata": {
-    "description": "Plugins de IA para negócios do Helio Arreche",
-    "version": "2.0.0"
+    "description": "Plugins do Vinicius — fork customizado do Prospector (gestão de clientes, projetos e renda)",
+    "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "prospector-de-sites",
       "source": "./prospector-de-sites",
-      "description": "Prospecção semi-automática com CRM local: encontra negócios bem avaliados com sites ruins no Google Maps, redesenha as páginas com estética premium (editor visual + comparador antes/depois), publica na HostGator sozinho (publicador automático + HTTPS), envia proposta anti-spam com página-capa personalizada via Gmail, faz follow-up, lê as respostas e gera contrato em Word travado — tudo administrado num dashboard local com kanban e financeiro. Comece pelo /setup.",
+      "description": "Prospecção semi-automática + gestão de clientes e renda: encontra negócios bem avaliados com sites ruins no Google Maps, redesenha as páginas com estética premium (editor visual + comparador antes/depois), publica via FTP, envia proposta anti-spam via Gmail, faz follow-up e gera contrato — tudo administrado num painel local multi-arquivo (identidade VF) com kanban, carteira de clientes ativos, lucro real e projeção de renda. Aceita clientes de fora da prospecção (site, automação, sistema). Comece pelo /setup.",
       "author": {
-        "name": "Helio Arreche"
+        "name": "Vinicius Fernandes de Jesus (fork de Helio Arreche)"
       },
-      "keywords": ["prospeccao", "landing-page", "redesign", "hostgator", "google-maps", "gmail", "crm", "dashboard"]
+      "keywords": ["prospeccao", "gestao-de-clientes", "renda", "landing-page", "redesign", "google-maps", "gmail", "crm", "dashboard"]
     }
   ]
 }

@@ -1,15 +1,16 @@
 {
   "name": "prospector-de-sites",
-  "version": "0.13.5",
-  "description": "COMECE PELO /setup (2 min, uma vez só). Prospecção semi-automática de clientes: encontra negócios bem avaliados com sites ruins no Google Maps, redesenha as páginas com estética premium, publica na HostGator (com página-capa antes/depois e HTTPS verificado) e envia proposta anti-spam por e-mail via Gmail, com follow-up automático. Leads em planilha do Google Sheets e dashboard local (kanban, contratos e financeiro).",
+  "version": "0.14.0",
+  "description": "COMECE PELO /setup (2 min, uma vez só). Fork VF: prospecção semi-automática + gestão de clientes e renda. Encontra negócios bem avaliados com sites ruins no Google Maps, redesenha as páginas com estética premium, publica via FTP e envia proposta anti-spam via Gmail com follow-up automático. Painel local multi-arquivo com kanban, carteira de clientes ativos (inclusive de fora da prospecção — site, automação, sistema), lucro real e projeção de renda.",
   "author": {
-    "name": "Helio Arreche"
+    "name": "Vinicius Fernandes de Jesus (fork de Helio Arreche)"
   },
   "keywords": [
     "prospeccao",
+    "gestao-de-clientes",
+    "renda",
     "landing-page",
     "redesign",
-    "hostgator",
     "google-maps",
     "gmail"
   ]

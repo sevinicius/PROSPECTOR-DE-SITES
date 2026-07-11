@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VF — Gestão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+</head>
+<body>
+<aside>
+  <div class="marca">
+    <div class="monograma">VF</div>
+    <div><b id="marca-nome">Vinicius Fernandes</b><span>gestão de clientes &amp; renda</span></div>
+  </div>
+  <nav id="nav"></nav>
+  <div class="side-foot">Movido pelo plugin <b>prospector-de-sites</b> (fork sevinicius).<br>Fechou, respondeu ou encerrou? Conta pro Claude que ele registra aqui.</div>
+</aside>
+<main>
+  <div class="topbar">
+    <h1 id="titulo">Visão geral</h1>
+    <span class="modo" id="modo">conectando…</span>
+    <input class="busca" id="busca" placeholder="Buscar cliente, nicho, serviço, cidade…">
+  </div>
+  <div id="view"></div>
+</main>
+
+<div id="doc-bg">
+  <div class="doc-bar"><b id="doc-titulo">Contrato</b><span class="sp"></span>
+    <button class="imp" onclick="printDoc()">Imprimir / salvar PDF</button>
+    <button class="fech" onclick="fecharDoc()">Fechar</button>
+  </div>
+  <iframe id="doc-frame"></iframe>
+</div>
+
+<div id="modal-bg" onclick="if(event.target===this)fecharEdit()"><div id="modal">
+  <h2 id="m-titulo">Editar cliente</h2>
+  <label>Nome</label><input id="m-nome">
+  <div class="mrow">
+    <div><label>Serviço</label><select id="m-servico">
+      <option value="site">Site</option><option value="automacao">Automação</option>
+      <option value="sistema">Sistema</option><option value="outro">Outro</option>
+    </select></div>
+    <div><label>Origem</label><select id="m-origem">
+      <option value="prospeccao">Prospecção</option><option value="indicacao">Indicação</option>
+      <option value="externo">Externo</option>
+    </select></div>
+  </div>
+  <div class="mrow"><div><label>E-mail</label><input id="m-email"></div><div><label>Telefone</label><input id="m-telefone"></div></div>
+  <div class="mrow"><div><label>WhatsApp (55DDDnúmero)</label><input id="m-whatsapp"></div><div><label>Cidade</label><input id="m-cidade"></div></div>
+  <div class="mrow"><div><label>Nicho</label><input id="m-nicho"></div><div><label>Status</label><select id="m-status"></select></div></div>
+  <div class="mrow"><div><label>Valor do projeto (R$)</label><input id="m-valor" type="number" step="50"></div><div><label>Data da proposta</label><input id="m-dataProposta" type="date"></div></div>
+  <div class="mrow"><div><label>Mensalidade cobrada (R$)</label><input id="m-manutencao" type="number" step="10"></div><div><label>Pagamento recebido?</label><select id="m-pago"><option value="0">Não</option><option value="1">Sim</option></select></div></div>
+  <div class="mrow"><div><label>Custo do projeto (R$)</label><input id="m-custoSetup" type="number" step="10" placeholder="APIs, terceiros, setup"></div><div><label>Custo mensal (R$)</label><input id="m-custoMensal" type="number" step="10" placeholder="hospedagem, ferramentas"></div></div>
+  <div class="mrow"><div><label>Contrato</label><select id="m-contratoStatus"><option value="pendente">Pendente</option><option value="enviado">Enviado</option><option value="assinado">Assinado</option></select></div><div><label>Data do contrato</label><input id="m-contratoEm" type="date"></div></div>
+  <div class="mrow"><div><label>CPF/CNPJ do cliente</label><input id="m-docCliente" placeholder="para o contrato"></div><div><label>Endereço do cliente</label><input id="m-endCliente" placeholder="rua, nº — para o contrato"></div></div>
+  <label>URL publicada</label><input id="m-urlNova">
+  <label>Proposta / observações</label><textarea id="m-obs" rows="3"></textarea>
+  <div class="mbot"><button class="cancelar" onclick="fecharEdit()">Cancelar</button><button class="salvar" onclick="salvarEdit()">Salvar</button></div>
+</div></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

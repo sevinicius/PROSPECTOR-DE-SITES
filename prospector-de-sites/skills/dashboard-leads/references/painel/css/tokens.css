@@ -1,0 +1,44 @@
+/* VF — design tokens. Ledger de estúdio: grafite profundo, tinta clara, um acento âmbar. */
+:root{
+  /* superfícies */
+  --fundo:#131511;
+  --painel:#1B1E19;
+  --painel-2:#22261F;
+  --linha:#2C3128;
+  --linha-forte:#3B4136;
+
+  /* tinta */
+  --tinta:#EAE6DA;
+  --tinta-2:#ABA79A;
+  --apagado:#7D7A6F;
+
+  /* acento único */
+  --ambar:#E0A83C;
+  --ambar-vivo:#F0BC55;
+  --ambar-fundo:rgba(224,168,60,.12);
+
+  /* dinheiro */
+  --ok:#8FBF7F;
+  --ok-fundo:rgba(143,191,127,.13);
+  --ruim:#D07F6A;
+  --ruim-fundo:rgba(208,127,106,.13);
+
+  /* status do funil (dessaturados de propósito — o âmbar é só de quem fecha) */
+  --st-novo:#7A8CA8;
+  --st-redesenhado:#9C7BB8;
+  --st-publicado:#5E9DA8;
+  --st-proposta:#C99B4E;
+  --st-respondeu:#8FBF7F;
+  --st-fechado:#E0A83C;
+  --st-encerrado:#6E6B60;
+  --st-descartado:#55534A;
+
+  /* tipografia */
+  --display:'Fraunces',Georgia,'Times New Roman',serif;
+  --ui:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono','Cascadia Mono',Consolas,monospace;
+
+  /* geometria — cantos discretos, nada de bolha */
+  --raio:6px;
+  --raio-g:10px;
+}

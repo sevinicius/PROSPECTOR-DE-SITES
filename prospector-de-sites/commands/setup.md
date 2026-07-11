@@ -51,7 +51,7 @@ Se os dados da HostGator foram informados, teste a conexão seguindo a skill `de
 
 ## 6. Dashboard inicial
 
-Siga a seção "Setup" da skill `dashboard-leads`: copie `dashboard-server.py` e `iniciar-dashboard.bat` para a raiz da pasta conectada, crie o banco `prospector.db` (schema da skill) e gere o `dashboard.html` do template. Explique ao usuário: duplo clique em `iniciar-dashboard.bat` abre o painel completo em http://localhost:8765 com edição/exclusão salvando no banco (requer Python no Windows; sem ele, o dashboard.html abre no modo leitura).
+Siga a seção "Setup" da skill `dashboard-leads`: copie `dashboard-server.py`, `iniciar-dashboard.bat` e a pasta `painel/` INTEIRA para a raiz da pasta conectada, e crie o banco `prospector.db` (schema da skill). Explique ao usuário: duplo clique em `iniciar-dashboard.bat` abre o painel completo em http://localhost:8765 com edição/exclusão salvando no banco (requer Python no Windows). Se existir um `dashboard.html` antigo na pasta, o server importa o snapshot dele pro banco na primeira execução — depois pode apagar o arquivo.
 
 ## 7B. Entregar o manual e os scripts
 
@@ -59,4 +59,4 @@ Copie da pasta do plugin para a pasta conectada (sobrescrevendo versões antigas
 
 ## 7. Encerrar
 
-Confirme o que foi salvo e explique o ciclo (guiando SEMPRE o próximo passo ao fim de cada comando): `/prospectar` → `/redesenhar` → `/publicar` → `/proposta`, com `/editor` opcional para ajustes manuais e o `dashboard.html` como painel de controle de tudo.
+Confirme o que foi salvo e explique o ciclo (guiando SEMPRE o próximo passo ao fim de cada comando): `/prospectar` → `/redesenhar` → `/publicar` → `/proposta`, com `/editor` opcional para ajustes manuais e o painel (http://localhost:8765) como controle de tudo — incluindo a carteira de clientes ativos, que também recebe clientes de fora ("+ Cliente" ou contando pro Claude).
