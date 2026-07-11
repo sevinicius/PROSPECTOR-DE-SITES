@@ -23,6 +23,11 @@ Arquitetura na RAIZ da pasta conectada:
 3. Diga ao usuário: "duplo clique em `iniciar-dashboard.bat` abre o painel" (requer Python).
 4. Usuário antigo (tinha `dashboard.html` com snapshot): o server importa o snapshot pro banco
    na primeira execução automaticamente; depois o dashboard.html pode ser apagado.
+5. **Atalho na Área de Trabalho (opcional):** copie `references/atalho/Gestao-VF.vbs` e
+   `references/atalho/criar-atalho.ps1` para a raiz da pasta conectada e `references/atalho/gestao-vf.ico`
+   para `assets/gestao-vf.ico`; rode o `criar-atalho.ps1`. Ele cria "Gestão VF.lnk" na Área de
+   Trabalho com o ícone VF, apontando pro `Gestao-VF.vbs` (launcher sem janela de console:
+   sobe o servidor via `pythonw` se necessário e abre o painel no navegador).
 
 ## Schema do banco
 
