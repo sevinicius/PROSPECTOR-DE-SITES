@@ -34,7 +34,7 @@ main{margin-left:236px;flex:1;min-width:0;padding:20px 26px 0;height:100vh;displ
 /* ---------- stats ---------- */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
 .stat{background:var(--painel);border:1px solid var(--linha);border-radius:var(--raio-g);padding:14px 16px 12px}
-.stat .n{font-family:var(--display);font-size:27px;font-weight:600;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat .n{font-family:var(--num);font-size:26px;font-weight:600;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
 .stat .l{color:var(--tinta-2);font-size:11px;margin-top:6px;font-weight:600;letter-spacing:.02em}
 .stat .sub{font-family:var(--mono);font-size:10.5px;color:var(--apagado);margin-top:3px}
 .stat.ambar .n{color:var(--ambar)}
