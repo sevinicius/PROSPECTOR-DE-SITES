@@ -68,9 +68,9 @@ main{margin-left:236px;flex:1;min-width:0;padding:20px 26px 0;height:100vh;displ
 .cards{flex:1;overflow-y:auto;min-height:0;padding-right:6px}
 .col>h3{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;margin:0 4px 12px;display:flex;justify-content:space-between;color:var(--tinta-2);flex:0 0 auto;font-weight:700}
 .col>h3 span{font-family:var(--mono);color:var(--apagado)}
-.card{background:var(--painel-2);border:1px solid var(--linha);border-left:3px solid var(--cor,var(--ambar));border-radius:var(--raio);padding:12px;margin-bottom:9px}
-.card .nm{font-weight:700;font-size:13px}
-.card .mt{color:var(--tinta-2);font-size:11.5px;margin:4px 0}
+.card{background:var(--painel-2);border:1px solid var(--linha);border-left:3px solid var(--cor,var(--ambar));border-radius:var(--raio);padding:9px 11px;margin-bottom:8px}
+.card .nm{font-weight:700;font-size:12.5px;line-height:1.25}
+.card .mt{color:var(--tinta-2);font-size:11px;margin:3px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .motivo{color:var(--tinta-2);font-size:11.5px;font-style:italic;margin:7px 0;border-left:2px solid var(--linha-forte);padding-left:8px;line-height:1.45}
 .card .valor{font-family:var(--mono);color:var(--ok);font-weight:600;font-size:12.5px;margin-top:6px}
 .card .valor .mes{color:var(--apagado);font-weight:400;font-size:10.5px}
