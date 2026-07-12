@@ -1,7 +1,7 @@
 *{box-sizing:border-box}
 html{color-scheme:dark}
 body{margin:0;background:var(--fundo);color:var(--tinta);font-family:var(--ui);font-size:13.5px;min-height:100vh;display:flex;overflow-x:hidden}
-::selection{background:var(--ambar);color:#131511}
+::selection{background:var(--ambar);color:#08111F}
 
 /* ---------- sidebar ---------- */
 aside{width:236px;min-height:100vh;background:var(--fundo);border-right:1px solid var(--linha);padding:20px 14px;position:fixed;top:0;bottom:0;display:flex;flex-direction:column}
@@ -105,13 +105,13 @@ tr:hover td{background:var(--painel-2)}
 .pagin .info{margin-right:auto;font-family:var(--mono);font-size:11px}
 .pagin button{background:var(--painel-2);border:1px solid var(--linha);border-radius:var(--raio);padding:5px 10px;font-size:12px;font-weight:700;color:var(--tinta-2);cursor:pointer;font-family:var(--mono)}
 .pagin button:hover{border-color:var(--ambar);color:var(--ambar)}
-.pagin button.on{background:var(--ambar);border-color:var(--ambar);color:#131511}
+.pagin button.on{background:var(--ambar);border-color:var(--ambar);color:#08111F}
 .pagin button:disabled{opacity:.35;cursor:default}
 .pagin select{border:1px solid var(--linha);border-radius:var(--raio);padding:5px 8px;font-size:12px;background:var(--painel-2);color:var(--tinta-2);font-family:var(--ui)}
 
 /* ---------- botões ---------- */
 .btn{border:0;border-radius:var(--raio);padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--ui)}
-.btn.prim{background:var(--ambar);color:#131511}
+.btn.prim{background:var(--ambar);color:#08111F}
 .btn.prim:hover{background:var(--ambar-vivo)}
 .btn.sec{background:var(--painel-2);color:var(--tinta);border:1px solid var(--linha)}
 .btn.sec:hover{border-color:var(--ambar);color:var(--ambar)}
@@ -133,7 +133,7 @@ tr:hover td{background:var(--painel-2)}
 .p-sub{color:var(--apagado);font-size:11.5px;margin:3px 0 11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px}
 .p-main a{text-align:center;padding:8px 6px;border-radius:var(--raio);font-size:12px;font-weight:700;text-decoration:none}
-.p-main .prim{background:var(--ambar);color:#131511}
+.p-main .prim{background:var(--ambar);color:#08111F}
 .p-main .prim:hover{background:var(--ambar-vivo)}
 .p-main .sec{background:var(--painel-2);color:var(--tinta);border:1px solid var(--linha)}
 .p-main .sec:hover{border-color:var(--ambar);color:var(--ambar)}
@@ -166,7 +166,7 @@ tr:hover td{background:var(--painel-2)}
 
 /* ---------- contratos ---------- */
 .btn-ct{display:inline-block;font-size:11.5px;font-weight:700;text-decoration:none;padding:5px 11px;border-radius:var(--raio);margin:2px 4px 2px 0;white-space:nowrap}
-.btn-ct.ver{background:var(--ambar);color:#131511}
+.btn-ct.ver{background:var(--ambar);color:#08111F}
 .btn-ct.ver:hover{background:var(--ambar-vivo)}
 .btn-ct.baixar{background:var(--painel-2);color:var(--tinta);border:1px solid var(--linha)}
 .btn-ct.baixar:hover{border-color:var(--ambar);color:var(--ambar)}
@@ -197,7 +197,7 @@ select.mini{border:1px solid var(--linha);border-radius:var(--raio);padding:4px 
 .doc-bar b{font-family:var(--display);font-size:14.5px}
 .doc-bar .sp{flex:1}
 .doc-bar button{border:0;border-radius:var(--raio);padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--ui)}
-.doc-bar .imp{background:var(--ambar);color:#131511}
+.doc-bar .imp{background:var(--ambar);color:#08111F}
 .doc-bar .fech{background:var(--painel-2);color:var(--tinta)}
 #doc-frame{flex:1;border:0;width:100%;background:#E9E7E1}
 
@@ -212,7 +212,7 @@ select.mini{border:1px solid var(--linha);border-radius:var(--raio);padding:4px 
 #modal .mrow{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
 #modal .mbot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 #modal .mbot button{border:0;border-radius:var(--raio);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--ui)}
-#modal .salvar{background:var(--ambar);color:#131511}
+#modal .salvar{background:var(--ambar);color:#08111F}
 #modal .cancelar{background:var(--painel-2);color:var(--tinta)}
 
 /* ---------- modal genérico (fluxos: briefing / orçamento / contrato) ---------- */
@@ -226,7 +226,7 @@ select.mini{border:1px solid var(--linha);border-radius:var(--raio);padding:4px 
 #modal2 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
 #modal2 .mbot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 #modal2 .mbot button{border:0;border-radius:var(--raio);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--ui)}
-#modal2 .salvar{background:var(--ambar);color:#131511}
+#modal2 .salvar{background:var(--ambar);color:#08111F}
 #modal2 .cancelar{background:var(--painel-2);color:var(--tinta)}
 
 /* ---------- config ---------- */

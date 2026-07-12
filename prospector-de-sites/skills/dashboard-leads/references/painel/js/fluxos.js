@@ -230,10 +230,12 @@ window.gerarOrcamento = async (slug) => {
     .replace('{{APRESENTACAO}}', esc(st.assinatura.apresentacao || ''))
     .replace('{{WHATSAPP}}', esc(st.assinatura.whatsapp || ''));
   const r = await api.gerar(l.slug, 'orcamento', html);
-  // cliente fechado/encerrado: só registra o documento — NÃO mexe em valor/manutencao/status
-  // (senão corrompe o Financeiro, que usa esses campos do cliente ativo)
+  // só move pra "proposta" quem está em PRÉ-VENDA. Cliente fechado/encerrado (ou status
+  // desconhecido por race de carregamento) só registra o documento — não mexe em
+  // valor/manutencao/status, senão corrompe o Financeiro do cliente ativo.
+  const PRE_VENDA = ['novo', 'redesenhado', 'publicado', 'proposta', 'respondeu'];
   const mudancas = { orcamentoEm: hoje() };
-  if (!['fechado', 'encerrado'].includes(l.status)) {
+  if (PRE_VENDA.includes(l.status)) {
     mudancas.valor = valor;
     mudancas.manutencao = mensal || null;
     mudancas.status = 'proposta';
