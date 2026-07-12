@@ -187,7 +187,7 @@ window.abrirOrcamentoModal = (slug) => {
     <div class="mrow">${campo('f-valor', 'Valor do projeto (R$)', l.valor || '', 'number')}${campo('f-mensal', 'Mensalidade (R$, 0 = sem)', l.manutencao || 0, 'number')}</div>
     <div class="mrow">${campo('f-servidor', 'Servidor/hospedagem (R$/ano, 0 = sem)', 0, 'number', 'ex.: 600')}${campo('f-mensal-inicio', 'Mensalidade começa', 'no mês seguinte à entrega')}</div>
     <div class="mrow">${campo('f-prazo', 'Prazo de entrega', '15 dias úteis')}${campo('f-validade', 'Validade da proposta', '7 dias')}</div>
-    <div class="mrow">${campo('f-pagamento', 'Forma de pagamento', '50% para iniciar e 50% na entrega')}${campo('f-ajustes', 'Ajustes inclusos', '2 rodadas de ajustes')}</div>
+    <div class="mrow">${campo('f-pagamento', 'Forma de pagamento', 'Cartão de crédito ou Pix')}${campo('f-ajustes', 'Ajustes inclusos', '2 rodadas de ajustes')}</div>
     <div class="mbot"><button class="cancelar" onclick="fecharModal2()">Cancelar</button>
     <button class="salvar" onclick="gerarOrcamento('${slug}')">Gerar e mover pra proposta</button></div>`);
 };
