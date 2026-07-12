@@ -235,4 +235,7 @@ select.mini{border:1px solid var(--linha);border-radius:var(--raio);padding:4px 
 .cfg-label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--apagado);margin:12px 0 4px}
 .salvo-ok{color:var(--ok);font-weight:700;font-size:13px;display:none}
 
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--painel-2);border:1px solid var(--linha-forte);color:var(--tinta);padding:11px 18px;border-radius:var(--raio);font-size:12.5px;z-index:80;box-shadow:0 10px 34px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:80vw}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
 @media(max-width:860px){aside{display:none}main{margin-left:0}}

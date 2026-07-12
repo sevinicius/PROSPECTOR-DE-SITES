@@ -133,6 +133,7 @@ window.gerarBriefing = async () => {
   await api.patch(l.slug, { briefingStatus: 'criado', servico: tipo, briefing: JSON.stringify({ tipo, criadoEm: hoje() }) });
   window.fecharModal2();
   await window.__recarrega();
+  if (r && r.pdf) window.toast('Briefing salvo em ' + r.pdf);
   window.open(r.url, '_blank');
 };
 
@@ -244,6 +245,7 @@ window.gerarOrcamento = async (slug) => {
   await api.patch(l.slug, mudancas);
   window.fecharModal2();
   await window.__recarrega();
+  if (r && r.pdf) window.toast('Orçamento salvo em ' + r.pdf);
   window.open(r.url, '_blank');
 };
 
@@ -328,5 +330,6 @@ window.gerarContrato = async (slug) => {
   await api.patch(l.slug, { docCliente: doc || null, endCliente: end || null, servico: tipo, contratoStatus: 'gerado', contratoEm: hoje() });
   window.fecharModal2();
   await window.__recarrega();
+  if (r && r.pdf) window.toast('Contrato salvo em ' + r.pdf);
   window.open(r.url, '_blank');
 };

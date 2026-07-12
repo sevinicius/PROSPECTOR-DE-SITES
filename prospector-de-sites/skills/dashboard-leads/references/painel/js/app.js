@@ -61,6 +61,14 @@ export function recarrega() {
 }
 window.__recarrega = recarrega;
 
+// toast transitório (ex.: confirmar onde o PDF foi salvo)
+window.toast = (msg) => {
+  let t = document.getElementById('vf-toast');
+  if (!t) { t = document.createElement('div'); t.id = 'vf-toast'; t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(window.__toastT); window.__toastT = setTimeout(() => t.classList.remove('on'), 5000);
+};
+
 function salvar(slug, mudancas) { api.patch(slug, mudancas).then(recarrega); }
 
 // ---------- handlers globais (referenciados por onclick="" nas views) ----------

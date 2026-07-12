@@ -3,7 +3,7 @@
 """Prospector — servidor local do dashboard (SQLite). Sem dependências: só Python padrão.
 Uso: python dashboard-server.py  (ou duplo clique em iniciar-dashboard.bat)
 Abre em http://localhost:8765 — edições, exclusões e drag&drop salvam no prospector.db"""
-import datetime, json, sqlite3, os, re, sys, webbrowser
+import datetime, json, sqlite3, os, re, shutil, subprocess, sys, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 PASTA = os.path.dirname(os.path.abspath(__file__))
@@ -15,6 +15,45 @@ def ler_config():
     try: return json.load(open(CONFIG, encoding='utf-8'))
     except Exception: return {}
 PORTA = 8765
+
+# ---- PDF por cliente: renderiza o doc via Edge/Chrome headless em clientes/<nome>/<tipo>/ ----
+_NAV_CANDIDATOS = [
+    os.path.expandvars(r'%ProgramFiles%\Microsoft\Edge\Application\msedge.exe'),
+    os.path.expandvars(r'%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe'),
+    os.path.expandvars(r'%ProgramFiles%\Google\Chrome\Application\chrome.exe'),
+    os.path.expandvars(r'%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe'),
+]
+TIPO_PASTA = {'orcamento': 'orçamento', 'briefing': 'briefing', 'contrato': 'contrato'}
+
+def achar_navegador():
+    for c in _NAV_CANDIDATOS:
+        if os.path.isfile(c): return c
+    return shutil.which('msedge') or shutil.which('chrome') or shutil.which('chromium')
+
+def sanit_pasta(nome):
+    nome = re.sub(r'[\\/:*?"<>|]+', '-', (nome or '').strip()).strip('. ')
+    return nome or None
+
+def gerar_pdf(slug, arquivo, nome):
+    """Imprime sites/<slug>/<arquivo>-<slug>.html em clientes/<nome>/<tipo>/<arquivo>-<slug>.pdf.
+    Retorna o caminho relativo do PDF, ou None se não houver navegador headless."""
+    nav = achar_navegador()
+    if not nav: return None
+    nome_pasta = sanit_pasta(nome) or slug
+    subpasta = TIPO_PASTA.get(arquivo, arquivo)
+    destino = os.path.join(PASTA, 'clientes', nome_pasta, subpasta)
+    os.makedirs(destino, exist_ok=True)
+    out = os.path.join(destino, '%s-%s.pdf' % (arquivo, slug))
+    url = 'http://127.0.0.1:%d/sites/%s/%s-%s.html' % (PORTA, slug, arquivo, slug)
+    try:
+        subprocess.run([nav, '--headless=new', '--disable-gpu', '--no-pdf-header-footer',
+                        '--no-margins', '--print-to-pdf=%s' % out, url],
+                       timeout=40, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        return None
+    if os.path.isfile(out):
+        return os.path.relpath(out, PASTA).replace('\\', '/')
+    return None
 CAMPOS = ['slug','nome','nicho','cidade','nota','avaliacoes','email','telefone','whatsapp',
           'siteAntigo','motivo','status','urlNova','dataProposta','valor','obs',
           'contratoStatus','contratoEm','manutencao','pago','docCliente','endCliente',
@@ -143,15 +182,17 @@ class App(SimpleHTTPRequestHandler):
             if arquivo not in ('contrato', 'briefing', 'orcamento') or not html:
                 return self._json(400, {'erro': 'arquivo deve ser contrato|briefing|orcamento e html não pode ser vazio'})
             c = conexao()
-            existe = c.execute('SELECT 1 FROM leads WHERE slug=?', (slug,)).fetchone()
+            row = c.execute('SELECT nome FROM leads WHERE slug=?', (slug,)).fetchone()
             c.close()
-            if not existe:
+            if row is None:
                 return self._json(404, {'erro': 'lead não encontrado'})
             pasta = os.path.join(PASTA, 'sites', slug)
             os.makedirs(pasta, exist_ok=True)
             caminho = os.path.join(pasta, '%s-%s.html' % (arquivo, slug))
             open(caminho, 'w', encoding='utf-8').write(html)
-            return self._json(200, {'ok': True, 'url': '/sites/%s/%s-%s.html' % (slug, arquivo, slug)})
+            # auto-salva o PDF na pasta do cliente (clientes/<nome>/<tipo>/) via navegador headless
+            pdf_rel = gerar_pdf(slug, arquivo, row[0])
+            return self._json(200, {'ok': True, 'url': '/sites/%s/%s-%s.html' % (slug, arquivo, slug), 'pdf': pdf_rel})
         # POST /api/briefing/<slug>/respostas  {respostas:{...}} -> salva no lead e marca respondido (não lido)
         if len(partes) == 5 and partes[1] == 'api' and partes[2] == 'briefing' and partes[4] == 'respostas':
             respostas = corpo.get('respostas', {})

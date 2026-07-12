@@ -97,6 +97,11 @@ O painel faz sozinho (não reimplementar; apenas mantenha o banco coerente se ag
   grava `sites/<slug>/contrato-<slug>.html` e marca `contratoStatus='gerado'` + `contratoEm`.
   Status do contrato: `pendente | gerado | enviado | assinado`.
 - Endpoint genérico de geração: `POST /api/gerar/<slug>` `{arquivo: contrato|briefing|orcamento, html}`.
+- **PDF automático por cliente:** ao gerar, o servidor também renderiza o documento em PDF
+  (Edge/Chrome headless via `--print-to-pdf`) e salva em `clientes/<nome do cliente>/<tipo>/<arquivo>-<slug>.pdf`
+  (tipo = orçamento|briefing|contrato). Cada cliente tem sua pasta. Requer Edge ou Chrome
+  instalado (Windows tem Edge por padrão); sem navegador headless, só o HTML é salvo e o
+  campo `pdf` da resposta vem `null`. O painel mostra um toast com o caminho salvo.
 
 ## Espelho na Mente Global (se o projeto estiver registrado na esteira)
 
