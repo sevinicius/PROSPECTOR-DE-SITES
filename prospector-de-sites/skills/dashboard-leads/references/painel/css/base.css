@@ -6,7 +6,7 @@ body{margin:0;background:var(--fundo);color:var(--tinta);font-family:var(--ui);f
 /* ---------- sidebar ---------- */
 aside{width:236px;min-height:100vh;background:var(--fundo);border-right:1px solid var(--linha);padding:20px 14px;position:fixed;top:0;bottom:0;display:flex;flex-direction:column}
 .marca{display:flex;align-items:center;gap:11px;padding:2px 8px 18px;border-bottom:1px solid var(--linha);margin-bottom:14px}
-.monograma{width:38px;height:38px;border:1.5px solid var(--ambar);color:var(--ambar);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.5px;border-radius:var(--raio)}
+.monograma{width:38px;height:38px;border-radius:var(--raio);object-fit:cover;display:block}
 .marca b{font-family:var(--display);font-size:15.5px;font-weight:600;display:block;letter-spacing:.2px}
 .marca span{display:block;font-size:10.5px;color:var(--apagado);margin-top:2px}
 nav{display:flex;flex-direction:column;gap:1px;overflow-y:auto}
