@@ -23,6 +23,11 @@ Arquitetura na RAIZ da pasta conectada:
 3. Diga ao usuário: "duplo clique em `iniciar-dashboard.bat` abre o painel" (requer Python).
 4. Usuário antigo (tinha `dashboard.html` com snapshot): o server importa o snapshot pro banco
    na primeira execução automaticamente; depois o dashboard.html pode ser apagado.
+5. **Atalho na Área de Trabalho (opcional):** copie `references/atalho/Gestao-VF.vbs` e
+   `references/atalho/criar-atalho.ps1` para a raiz da pasta conectada e `references/atalho/gestao-vf.ico`
+   para `assets/gestao-vf.ico`; rode o `criar-atalho.ps1`. Ele cria "Gestão VF.lnk" na Área de
+   Trabalho com o ícone VF, apontando pro `Gestao-VF.vbs` (launcher sem janela de console:
+   sobe o servidor via `pythonw` se necessário e abre o painel no navegador).
 
 ## Schema do banco
 
@@ -35,6 +40,7 @@ CREATE TABLE IF NOT EXISTS leads(
   docCliente TEXT, endCliente TEXT,
   servico TEXT DEFAULT 'site', origem TEXT DEFAULT 'prospeccao',
   custoSetup REAL DEFAULT 0, custoMensal REAL DEFAULT 0,
+  briefingStatus TEXT, briefing TEXT, orcamentoEm TEXT,
   atualizado TEXT DEFAULT (datetime('now','localtime')));
 ```
 
@@ -71,6 +77,27 @@ EOF
 - **"encerrei o contrato do X"** → `status='encerrado'`.
 - `/contrato` → `contratoStatus='enviado'` + `contratoEm`. Assinou → `'assinado'`. Pagou → `pago=1`.
 
+## Fluxo briefing → orçamento → contrato (abas Briefings, Orçamentos e Contratos)
+
+O painel faz sozinho (não reimplementar; apenas mantenha o banco coerente se agir via chat):
+
+- **Aba Briefings**: botão "+ Briefing" gera `sites/<slug>/briefing-<slug>.html` (perguntas por
+  tipo de projeto) e marca `briefingStatus='criado'` → usuário envia ao cliente (`'enviado'`) →
+  cliente responde pela própria página (POST `/api/briefing/<slug>/respostas`, vira `'respondido'`
+  com `respondidoEm`) ou o usuário cola as respostas no painel. Respostas ficam em `briefing`
+  (JSON: `{tipo, criadoEm, respostas|respostas_texto, respondidoEm, vistoEm}`) e aparecem na
+  listagem. **Filtros**: Aguardando resposta · Respondidos — não lidos (`respondido` sem
+  `vistoEm`; resposta nova zera o visto) · Lidos (abrir as respostas marca `vistoEm`).
+- **Aba Orçamentos**: de um briefing respondido (ou direto via "+ Orçamento"), gera
+  `orcamento-<slug>.html` (documento formal), grava `valor`/`manutencao`/`orcamentoEm` e move o
+  lead pra `status='proposta'` + `dataProposta` (cliente já fechado/encerrado NÃO volta pro
+  funil). A listagem vincula cada orçamento ao briefing de origem (Ver respostas).
+- **Aba Contratos**: botão "+ Contrato" usa `painel/templates/contrato.html` — Cláusula do
+  Objeto pré-preenchida POR TIPO de serviço e editável, manutenção opcional, cláusulas extras;
+  grava `sites/<slug>/contrato-<slug>.html` e marca `contratoStatus='gerado'` + `contratoEm`.
+  Status do contrato: `pendente | gerado | enviado | assinado`.
+- Endpoint genérico de geração: `POST /api/gerar/<slug>` `{arquivo: contrato|briefing|orcamento, html}`.
+
 ## Espelho na Mente Global (se o projeto estiver registrado na esteira)
 
 Depois de todo upsert relevante (fechou, encerrou, proposta, mudança de valor), espelhe na
@@ -83,6 +110,19 @@ Mente via MCP `saam-esteira-memory` (ou `mente-bridge.cjs`):
 
 SQLite = operacional (painel). Mente = memória semântica (qualquer sessão sabe quem são os clientes).
 Se a Mente estiver offline, siga o fallback do CLAUDE.md global (acumule e deposite depois).
+
+## Capa do projeto (imagem da página de login/inicial)
+
+Na aba **Projetos**, cada card usa como imagem o arquivo `sites/<slug>/capa.png` — um
+screenshot da página de login/inicial do projeto. Se o arquivo não existir, o card cai no
+fallback (iframe ao vivo para sites; nome do serviço para sistema/automação).
+
+**Convenção — todo projeto deve ter `capa.png`:** ao adicionar/entregar um projeto, gere o
+screenshot da tela de login/inicial e salve em `sites/<slug>/capa.png`. Formas:
+- **Site (`/redesenhar`)**: screenshot da própria página gerada `sites/<slug>/<slug>.html`.
+- **Sistema/automação**: screenshot da tela de login do sistema (ex.: protótipo/app do cliente).
+- Captura via navegador headless (Playwright/Chromium): abrir a página → `screenshot` do viewport
+  (~1280×770, proporção do card) → salvar em `sites/<slug>/capa.png`.
 
 ## O que o painel faz sozinho (não reimplementar)
 

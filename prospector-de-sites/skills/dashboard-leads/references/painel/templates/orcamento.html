@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<!-- TEMPLATE DE ORÇAMENTO (painel VF) — proposta comercial imprimível gerada a partir do briefing. -->
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orçamento — {{NOME_CLIENTE}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* margin:0 remove os cabeçalhos/rodapés automáticos do navegador (data, título, URL, nº de página) */
+@page{size:A4;margin:0}
+:root{--fundo:#0C1626;--tinta:#EAF1F9;--tinta2:#9FB4CE;--apagado:#6E819B;--ambar:#4F9CE8;--linha:#22385A;--painel:#122036;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;--num:'Space Grotesk','Inter',sans-serif;--ui:-apple-system,'Segoe UI',Roboto,Inter,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--tinta);font-family:var(--ui);font-size:14.5px;line-height:1.6;padding:40px 16px}
+.folha{max-width:720px;margin:0 auto}
+.print-bar{position:fixed;top:14px;right:16px;z-index:10}
+.print-bar button{border:0;border-radius:6px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;background:var(--ambar);color:#131511}
+.topo{display:flex;justify-content:flex-end;margin-bottom:6px}
+.num{font-family:var(--num);font-size:11px;color:var(--apagado);text-align:right;letter-spacing:.2px}
+.cabeca{display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;border-bottom:1px solid var(--linha);padding-bottom:22px;margin-bottom:26px}
+.marca{width:56px;height:56px;border-radius:13px}
+h1{font-family:var(--serif);font-size:27px;font-weight:600;margin:2px 0 0}
+.sub{color:var(--tinta2);margin:0;font-size:13.5px}
+h2{font-family:var(--serif);font-size:16px;font-weight:600;margin:26px 0 10px;color:var(--ambar)}
+.escopo{white-space:pre-wrap;background:var(--painel);border:1px solid var(--linha);border-radius:8px;padding:16px 18px}
+.valores{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin:14px 0}
+.valor-caixa{background:var(--painel);border:1px solid var(--linha);border-radius:8px;padding:16px 18px}
+.valor-caixa .v{font-family:var(--num);font-size:23px;color:var(--ambar);font-weight:600;letter-spacing:-.5px}
+.valor-caixa .l{color:var(--tinta2);font-size:12px;margin-top:5px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}
+td{padding:8px 4px;border-bottom:1px solid var(--linha)}
+td:last-child{text-align:right;color:var(--tinta2);font-family:var(--num)}
+.rodape{margin-top:34px;border-top:1px solid var(--linha);padding-top:18px;color:var(--tinta2);font-size:13px;text-align:center}
+.rodape b{color:var(--tinta)}
+@media print{
+  :root{--tinta:#16233F;--tinta2:#40506A;--apagado:#78899F;--linha:#d7dee8;--painel:#f2f5fa;--ambar:#1F4E86}
+  body{background:#fff;color:#1a1a1a;padding:1.4cm 1.5cm;font-size:10.5pt;line-height:1.38}
+  .print-bar{display:none}
+  .folha{max-width:none}
+  .cabeca{padding-bottom:12px;margin-bottom:14px}
+  h1{font-size:19pt}
+  h2{font-size:12.5pt;margin:12px 0 5px}
+  .escopo{padding:9px 12px;border-radius:6px}
+  .valores{gap:8px;margin:8px 0}
+  .valor-caixa{padding:9px 12px}
+  .valor-caixa .v{font-size:16pt}
+  .valor-caixa .l{font-size:9pt}
+  td{padding:4px 4px}
+  .rodape{margin-top:14px;padding-top:9px;font-size:10pt}
+  .escopo,.valores,.rodape,table,h2{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="print-bar"><button onclick="window.print()">Imprimir / Salvar PDF</button></div>
+<div class="folha">
+  <div class="topo"><div class="num">{{DATA}} · válida por {{VALIDADE}}</div></div>
+  <div class="cabeca">
+    <img class="marca" src="/painel/assets/gestao-vf.png" alt="Logo VF">
+    <h1>Proposta de orçamento</h1>
+    <p class="sub">Para <b>{{NOME_CLIENTE}}</b> · {{TIPO_SERVICO}}</p>
+  </div>
+
+  <h2>O que será desenvolvido</h2>
+  <div class="escopo">{{ESCOPO}}</div>
+
+  <h2>Investimento</h2>
+  <div class="valores">
+    <div class="valor-caixa"><div class="v">R$ {{VALOR}}</div><div class="l">desenvolvimento do projeto{{FORMA_PAGAMENTO_NOTA}}</div></div>
+    {{CAIXA_MENSALIDADE}}
+    {{CAIXA_SERVIDOR}}
+  </div>
+
+  <h2>Condições</h2>
+  <table>{{LINHAS_CONDICOES}}</table>
+
+  <div class="rodape">
+    <b>{{NOME_PRESTADOR}}</b> — {{APRESENTACAO}}<br>WhatsApp: {{WHATSAPP}}
+  </div>
+</div>
+</body>
+</html>
