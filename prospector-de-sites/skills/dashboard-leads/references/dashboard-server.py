@@ -53,6 +53,13 @@ def importar_snapshot():
         print('(sem snapshot para importar: %s)' % e)
 
 class App(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        # sem cache pra HTML/CSS/JS: toda regeneração (orçamento, briefing, painel) aparece
+        # no reload normal, sem o navegador servir a versão velha do cache.
+        p = self.path.split('?')[0].lower()
+        if p.endswith(('.html', '.css', '.js', '/')) or p in ('/painel', ''):
+            self.send_header('Cache-Control', 'no-store, must-revalidate')
+        SimpleHTTPRequestHandler.end_headers(self)
     def _json(self, code, obj):
         corpo = json.dumps(obj, ensure_ascii=False).encode('utf-8')
         self.send_response(code)
