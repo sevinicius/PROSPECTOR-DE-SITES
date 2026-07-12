@@ -33,7 +33,14 @@ h2{font-family:var(--serif);font-size:16px;font-weight:600;margin:26px 0 10px;co
 table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0}
 td{padding:8px 4px;border-bottom:1px solid var(--linha)}
 td:last-child{text-align:right;color:var(--tinta2);font-family:var(--num)}
-.rodape{margin-top:34px;border-top:1px solid var(--linha);padding-top:18px;color:var(--tinta2);font-size:13px;text-align:center}
+.aceite{margin-top:34px;border-top:1px solid var(--linha);padding-top:20px}
+.aceite .nota{font-size:12px;color:var(--tinta2);text-align:center;margin:0 auto 44px;max-width:560px;line-height:1.5}
+.assinaturas{display:flex;gap:48px;justify-content:center}
+.assinaturas .a{flex:1;max-width:280px;text-align:center;font-size:12.5px}
+.assinaturas .a .linha{border-top:1px solid var(--tinta2);margin-bottom:7px}
+.assinaturas .a b{font-weight:600}
+.assinaturas .a span{display:block;color:var(--apagado);font-size:11px;margin-top:2px}
+.rodape{margin-top:30px;border-top:1px solid var(--linha);padding-top:18px;color:var(--tinta2);font-size:13px;text-align:center}
 .rodape b{color:var(--tinta)}
 @media print{
   :root{--tinta:#16233F;--tinta2:#40506A;--apagado:#78899F;--linha:#d7dee8;--painel:#f2f5fa;--ambar:#1F4E86}
@@ -50,7 +57,9 @@ td:last-child{text-align:right;color:var(--tinta2);font-family:var(--num)}
   .valor-caixa .l{font-size:9pt}
   td{padding:4px 4px}
   .rodape{margin-top:14px;padding-top:9px;font-size:10pt}
-  .escopo,.valores,.rodape,table,h2{page-break-inside:avoid}
+  .escopo,.valores,.rodape,table,h2,.aceite,.assinaturas{page-break-inside:avoid}
+  .aceite{margin-top:22px;padding-top:14px}
+  .aceite .nota{margin-bottom:34px}
 }
 </style>
 </head>
@@ -76,6 +85,14 @@ td:last-child{text-align:right;color:var(--tinta2);font-family:var(--num)}
 
   <h2>Condições</h2>
   <table>{{LINHAS_CONDICOES}}</table>
+
+  <div class="aceite">
+    <p class="nota">Ao assinar, o CONTRATANTE declara concordar com o escopo, os valores e as condições desta proposta.</p>
+    <div class="assinaturas">
+      <div class="a"><div class="linha"></div><b>{{NOME_CLIENTE}}</b><span>Contratante</span></div>
+      <div class="a"><div class="linha"></div><b>{{NOME_PRESTADOR}}</b><span>Contratado(a)</span></div>
+    </div>
+  </div>
 
   <div class="rodape">
     <b>{{NOME_PRESTADOR}}</b> — {{APRESENTACAO}}<br>WhatsApp: {{WHATSAPP}}
