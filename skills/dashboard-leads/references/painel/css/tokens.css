@@ -1,0 +1,45 @@
+/* VF — design tokens. Tema NAVY: azul-marinho profundo, tinta clara, acento azure. */
+:root{
+  /* superfícies */
+  --fundo:#0C1626;
+  --painel:#122036;
+  --painel-2:#182B46;
+  --linha:#22385A;
+  --linha-forte:#31507D;
+
+  /* tinta */
+  --tinta:#EAF1F9;
+  --tinta-2:#9FB4CE;
+  --apagado:#6E819B;
+
+  /* acento único (azure) — nome --ambar mantido por compatibilidade das referências */
+  --ambar:#4F9CE8;
+  --ambar-vivo:#6BB0F0;
+  --ambar-fundo:rgba(79,156,232,.14);
+
+  /* dinheiro */
+  --ok:#7FC9A0;
+  --ok-fundo:rgba(127,201,160,.14);
+  --ruim:#E38A72;
+  --ruim-fundo:rgba(227,138,114,.14);
+
+  /* status do funil (espectro frio; proposta em dourado como pop complementar do navy) */
+  --st-novo:#6E86B8;
+  --st-redesenhado:#9A82D8;
+  --st-publicado:#4FB0C0;
+  --st-proposta:#D9A441;
+  --st-respondeu:#6FC59A;
+  --st-fechado:#4F9CE8;
+  --st-encerrado:#5B6E86;
+  --st-descartado:#44546B;
+
+  /* tipografia */
+  --display:'Fraunces',Georgia,'Times New Roman',serif;
+  --ui:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono','Cascadia Mono',Consolas,monospace;
+  --num:'Space Grotesk','Inter',sans-serif; /* números de valores — distintivo, não genérico */
+
+  /* geometria — cantos discretos, nada de bolha */
+  --raio:6px;
+  --raio-g:10px;
+}
