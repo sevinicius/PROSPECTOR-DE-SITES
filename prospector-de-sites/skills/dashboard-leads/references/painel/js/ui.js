@@ -30,16 +30,25 @@ export function acoes(l) {
   return `<div class="acoes">${a.join('')}</div>`;
 }
 
+// ações compactas do card do kanban (só o essencial; detalhes ficam no "abrir")
+export function acoesCard(l) {
+  const a = [];
+  if (l.whatsapp) a.push(`<a href="https://wa.me/${l.whatsapp}" target="_blank" title="WhatsApp">wpp</a>`);
+  a.push(`<a href="#" onclick="abrirEdit('${l.slug}');return false">abrir</a>`);
+  a.push(`<a href="#" class="del" onclick="deletar('${l.slug}');return false" title="Excluir">✕</a>`);
+  return `<div class="acoes">${a.join('')}</div>`;
+}
+
 export function card(l) {
   const f = l.status === 'proposta' && dias(l.dataProposta) >= 4
-    ? `<span class="tag fup">follow-up ${dias(l.dataProposta)}d</span>` : '';
+    ? `<span class="tag fup">${dias(l.dataProposta)}d</span>` : '';
+  // uma linha de meta enxuta (com reticências): nota · cidade · nicho
+  const meta = [l.nota ? '★ ' + l.nota : null, l.cidade, l.nicho].filter(Boolean).join(' · ');
   return `<div class="card" draggable="true" ondragstart="dragIni(event,'${l.slug}')" ondragend="dragFim(event)" style="--cor:${CORES[l.status]}">
     <div class="nm">${esc(l.nome)}${tagServico(l)}${f}</div>
-    <div class="mt">${l.nota ? '★ ' + l.nota + ' (' + l.avaliacoes + ')' : ''}${l.cidade ? ' · ' + esc(l.cidade) : ''}</div>
-    ${l.motivo ? `<div class="motivo">${esc(l.motivo)}</div>` : ''}
-    ${l.obs ? `<div class="mt">${esc(l.obs)}</div>` : ''}
+    ${meta ? `<div class="mt">${esc(meta)}</div>` : ''}
     ${l.valor ? `<div class="valor">${fmt(l.valor)}${l.manutencao ? ` <span class="mes">+ ${fmt(l.manutencao)}/mês</span>` : ''}</div>` : ''}
-    ${acoes(l)}</div>`;
+    ${acoesCard(l)}</div>`;
 }
 
 export function pagSize() {
